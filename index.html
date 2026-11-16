@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Math Fighters - Um jogo de luta com matemática.">
+
+    <title>Math Fighters</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="js/main.js" defer></script>
+</head>
+
+<body>
+
+    <!-- =========================================
+         MENU PRINCIPAL
+    ========================================== -->
+
+    <main class="menu-container">
+
+        <div class="menu-overlay"></div>
+
+        <section class="menu-content">
+
+            <h1>MATH FIGHTERS</h1>
+
+            <nav class="menu-options">
+
+                <button id="start-button" class="menu-button">
+                    START
+                </button>
+
+                <button id="preferences-button" class="menu-button">
+                    PREFERÊNCIAS
+                </button>
+
+                <button id="exit-button" class="menu-button">
+                    EXIT
+                </button>
+
+            </nav>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================
+         PREFERÊNCIAS
+    ========================================== -->
+
+    <section id="preferences-panel" class="modal hidden">
+
+        <div class="modal-content">
+
+            <h2>PREFERÊNCIAS</h2>
+
+            <div class="setting-item">
+
+                <label for="volume-control">
+                    VOLUME
+                </label>
+
+                <div class="volume-container">
+
+                    <input type="range" id="volume-control" min="0" max="100" value="50">
+
+                    <span id="volume-value">50%</span>
+
+                </div>
+
+            </div>
+
+            <div class="setting-item">
+
+                <label for="fullscreen-control">
+                    TELA CHEIA
+                </label>
+
+                <input type="checkbox" id="fullscreen-control">
+
+            </div>
+
+            <button id="close-preferences" class="menu-button">
+                VOLTAR
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         SELEÇÃO DE MODO
+    ========================================== -->
+
+    <section id="mode-panel" class="modal hidden">
+
+        <div class="modal-content">
+
+            <h2>SELECIONE O MODO</h2>
+
+            <div class="mode-options">
+
+                <button id="solo-button" class="menu-button">
+                    SOLO
+                </button>
+
+                <button id="versus-button" class="menu-button">
+                    VERSUS LOCAL
+                </button>
+
+            </div>
+
+            <button id="back-mode-button" class="menu-button">
+                VOLTAR
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         PREPARAÇÃO DA PARTIDA
+    ========================================== -->
+
+    <section id="setup-panel" class="modal hidden">
+
+        <div class="setup-content">
+
+            <h2>PREPARAÇÃO DA PARTIDA</h2>
+
+            <!-- DIFICULDADE -->
+
+            <div id="difficulty-setting" class="setting-item">
+
+                <label for="difficulty-select">
+                    DIFICULDADE
+                </label>
+
+                <select id="difficulty-select">
+
+                    <option value="iniciante">
+                        INICIANTE
+                    </option>
+
+                    <option value="intermediario" selected>
+                        INTERMEDIÁRIO
+                    </option>
+
+                    <option value="avancado">
+                        AVANÇADO
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SELEÇÃO DE ARENA -->
+
+            <h3>ESCOLHA SUA ARENA</h3>
+
+            <div class="arena-container">
+
+                <button class="arena-card" data-arena="cerejeiras" type="button">
+
+                    <img src="assets/images/backgrounds/arena_cerejeiras.png" alt="Arena das cerejeiras">
+
+                    <span>ARENA CEREJEIRAS</span>
+
+                </button>
+
+
+                <button class="arena-card" data-arena="cidade" type="button">
+
+                    <img src="assets/images/backgrounds/arena_cidade_noturna.png" alt="Arena da cidade noturna">
+
+                    <span>ARENA CIDADE</span>
+
+                </button>
+
+            </div>
+
+            <p id="arena-message">
+                ESCOLHA UMA ARENA
+            </p>
+
+
+            <!-- AÇÕES -->
+
+            <div class="setup-actions">
+
+                <button id="continue-setup" class="menu-button">
+                    CONTINUAR
+                </button>
+
+                <button id="back-setup" class="menu-button">
+                    VOLTAR
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         SELEÇÃO DE PERSONAGENS
+    ========================================== -->
+
+    <section id="character-panel" class="modal hidden">
+
+        <div class="character-screen">
+
+            <h2>SELECT YOUR FIGHTER</h2>
+
+            <div class="fighters-container">
+
+
+                <!-- JOGADOR 1 -->
+
+                <div class="fighter-player">
+
+                    <h3>PLAYER 1</h3>
+
+                    <div class="fighter-preview" id="preview-player-1">
+                        <img src="assets/images/characters/preview_personagem1.png" alt="Personagem 1">
+                    </div>
+
+                    <span class="fighter-placeholder">
+                        P1
+                    </span>
+
+                </div>
+
+                <div class="fighter-options">
+
+                    <button class="fighter-option" data-player="1" data-character="personagem1" type="button">
+                        FIGHTER 01
+                    </button>
+
+                    <button class="fighter-option" data-player="1" data-character="personagem2" type="button">
+                        FIGHTER 02
+                    </button>
+
+                </div>
+
+                <p id="player-1-status">
+                    ESCOLHA SEU PERSONAGEM
+                </p>
+
+            </div>
+
+
+            <!-- JOGADOR 2 / COMPUTADOR -->
+
+            <div class="fighter-player" id="player-2-area">
+
+                <h3 id="player-2-title">
+                    PLAYER 2
+                </h3>
+
+                <div class="fighter-preview" id="preview-player-2">
+                    <img src="assets/images/characters/preview_personagem2.png" alt="Personagem 2">
+                </div>
+
+                <div class="fighter-options">
+
+                    <button class="fighter-option" data-player="2" data-character="personagem1" type="button">
+                        FIGHTER 01
+                    </button>
+
+                    <button class="fighter-option" data-player="2" data-character="personagem2" type="button">
+                        FIGHTER 02
+                    </button>
+
+                </div>
+
+                <p id="player-2-status">
+                    ESCOLHA SEU PERSONAGEM
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- BOTÕES DE AÇÃO -->
+
+        <div class="character-actions">
+
+            <button id="confirm-fighters" class="menu-button" type="button" disabled>
+                CONFIRMAR
+            </button>
+
+            <button id="back-characters" class="menu-button" type="button">
+                VOLTAR
+            </button>
+
+        </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         MENSAGENS
+    ========================================== -->
+
+    <section id="message-panel" class="modal hidden">
+
+        <div class="modal-content">
+
+            <h2 id="message-title">
+                MENSAGEM
+            </h2>
+
+            <p id="message-text"></p>
+
+            <button id="close-message" class="menu-button">
+                OK
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+     TELA DE COMBATE — MATH FIGHTERS
+========================================== -->
+
+    <section id="combat-panel" class="modal hidden">
+
+        <div class="combat-screen">
+
+            <!-- CABEÇALHO -->
+            <header class="combat-header">
+
+                <div class="combat-game-logo">
+                    <span class="combat-logo-small">THE ULTIMATE MATH BATTLE</span>
+                    <h2>MATH FIGHTERS</h2>
+                </div>
+
+                <button id="exit-combat" class="menu-button">
+                    SAIR DA LUTA
+                </button>
+
+            </header>
+
+
+            <!-- HUD DOS JOGADORES -->
+            <div class="combat-hud">
+
+                <!-- PLAYER 1 -->
+                <div class="combat-player-info player-one-hud">
+
+                    <div class="fighter-hud-heading">
+                        <span class="player-indicator">P1</span>
+                        <h3 id="combat-player1-name">PLAYER 1</h3>
+                    </div>
+
+                    <div class="health-container">
+
+                        <div class="health-label">
+                            <span>VIDA</span>
+                            <span id="health-value-player1">100</span>
+                        </div>
+
+                        <div class="health-bar">
+                            <div id="health-player1" class="health-fill"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="power-meter">
+
+                        <div class="power-label">
+                            <span>ENERGIA</span>
+                            <span id="power-value-player1">0/100</span>
+                        </div>
+
+                        <div class="power-bar">
+                            <div id="power-player1" class="power-fill"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INDICADOR CENTRAL -->
+                <div class="combat-center-hud">
+
+                    <span class="round-label">ROUND</span>
+                    <strong id="combat-round">01</strong>
+                    <span class="combat-timer">99</span>
+
+                </div>
+
+
+                <!-- PLAYER 2 -->
+                <div class="combat-player-info player-two-hud">
+
+                    <div class="fighter-hud-heading">
+                        <h3 id="combat-player2-name">PLAYER 2</h3>
+                        <span class="player-indicator">P2</span>
+                    </div>
+
+                    <div class="health-container">
+
+                        <div class="health-label">
+                            <span>VIDA</span>
+                            <span id="health-value-player2">100</span>
+                        </div>
+
+                        <div class="health-bar">
+                            <div id="health-player2" class="health-fill"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="power-meter">
+
+                        <div class="power-label">
+                            <span>ENERGIA</span>
+                            <span id="power-value-player2">0/100</span>
+                        </div>
+
+                        <div class="power-bar">
+                            <div id="power-player2" class="power-fill"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ARENA PRINCIPAL -->
+            <div id="combat-arena" class="combat-arena">
+
+                <!-- CAMADAS DO CENÁRIO -->
+                <div class="arena-background"></div>
+                <div class="arena-atmosphere"></div>
+                <div class="arena-midground"></div>
+                <div class="arena-ground"></div>
+                <div class="arena-ground-light"></div>
+
+                <!-- EFEITOS VISUAIS -->
+                <div class="arena-effects" id="arena-effects"></div>
+
+
+                <!-- DESAFIOS MATEMÁTICOS -->
+                <div id="math-challenge" class=" hidden">
+
+                    <!-- DESAFIO PLAYER 1 -->
+                    <div id="math-challenge-player1" class="math-challenge-card player-one-challenge hidden">
+
+                        <div class="challenge-heading">
+                            <span class="player-indicator">P1</span>
+                            <span>DESAFIO MATEMÁTICO</span>
+                        </div>
+
+                        <p id="math-question-player1" class="math-question">
+                            10 + 5 = ?
+                        </p>
+
+                        <label for="math-answer-player1">
+                            SUA RESPOSTA
+                        </label>
+
+                        <input type="number" id="math-answer-player1" placeholder="?" autocomplete="off">
+
+                        <p id="math-feedback-player1" class="math-feedback"></p>
+
+                        <button id="submit-math-answer-player1" class="menu-button" type="button">
+                            CONFIRMAR
+                        </button>
+
+                    </div>
+
+
+                    <!-- DESAFIO PLAYER 2 -->
+                    <div id="math-challenge-player2" class="math-challenge-card player-two-challenge hidden">
+
+                        <div class="challenge-heading">
+                            <span class="player-indicator">P2</span>
+                            <span>DESAFIO MATEMÁTICO</span>
+                        </div>
+
+                        <p id="math-question-player2" class="math-question">
+                            8 × 4 = ?
+                        </p>
+
+                        <label for="math-answer-player2">
+                            SUA RESPOSTA
+                        </label>
+
+                        <input type="number" id="math-answer-player2" placeholder="?" autocomplete="off">
+
+                        <p id="math-feedback-player2" class="math-feedback"></p>
+
+                        <button id="submit-math-answer-player2" class="menu-button" type="button">
+                            CONFIRMAR
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PERSONAGENS -->
+                <div class="combat-fighter fighter-left" id="fighter-container-1">
+
+                    <div class="fighter-shadow"></div>
+
+                    <img id="combat-fighter1" src="" alt="Lutador 1">
+
+                </div>
+
+
+                <div class="combat-fighter fighter-right" id="fighter-container-2">
+
+                    <div class="fighter-shadow"></div>
+
+                    <img id="combat-fighter2" src="" alt="Lutador 2">
+
+                </div>
+
+
+                <!-- ABERTURA CINEMATOGRÁFICA -->
+                <div id="round-intro" class="round-intro">
+
+                    <span class="intro-subtitle">MATH FIGHTERS PRESENTS</span>
+
+                    <h2 id="round-intro-text">ROUND 1</h2>
+
+                    <strong id="round-fight-text">FIGHT!</strong>
+
+                </div>
+
+
+                <!-- INDICADOR DE IMPACTO -->
+                <div id="combat-impact" class="combat-impact"></div>
+
+            </div>
+
+
+            <!-- RODAPÉ / COMANDOS -->
+
+            <footer class="combat-footer">
+
+                <div class="keyboard-hints player-one-hints">
+                    <strong>PLAYER 1</strong>
+                    <span><kbd>A</kbd> ESQUERDA</span>
+                    <span><kbd>D</kbd> DIREITA</span>
+                    <span><kbd>W</kbd> PULAR</span>
+                    <span><kbd>F</kbd> LEVE</span>
+                    <span><kbd>G</kbd> CONTRA</span>
+                    <span><kbd>H</kbd> ESPECIAL</span>
+                </div>
+
+                <p id="combat-status">
+                    PREPARE-SE PARA LUTAR!
+                </p>
+
+                <div class="keyboard-hints player-two-hints" id="player2-keyboard-hints">
+
+                    <strong>PLAYER 2</strong>
+                    <span><kbd>←</kbd> ESQUERDA</span>
+                    <span><kbd>→</kbd> DIREITA</span>
+                    <span><kbd>↑</kbd> PULAR</span>
+                    <span><kbd>J</kbd> LEVE</span>
+                    <span><kbd>K</kbd> CONTRA</span>
+                    <span><kbd>L</kbd> ESPECIAL</span>
+
+                </div>
+
+            </footer>
+
+        </div>
+
+    </section>
+
+
+</body>
+
+</html>

@@ -1,0 +1,2836 @@
+@font-face {
+    font-family: 'KiwiSoda';
+    src: url('../fonts/KiwiSoda.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Configurações gerais */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'KiwiSoda', Arial, Helvetica, sans-serif;
+    background-color: #151515;
+    color: white;
+}
+
+button,
+input,
+select {
+    font-family: inherit;
+}
+
+/* Menu principal */
+
+.menu-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+
+    background-image: url('../assets/images/backgrounds/menu.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.menu-content {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 55px;
+}
+
+/* O HTML utiliza h1 sem a classe game-title */
+.game-title,
+.menu-content h1 {
+    color: #ffffff;
+    font-size: clamp(36px, 6vw, 76px);
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-align: center;
+
+    text-shadow:
+        4px 4px 0 #8b2525,
+        7px 7px 0 #000000;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.menu-button {
+    width: 260px;
+    padding: 15px 20px;
+
+    border: 2px solid #ffffff;
+    background: rgba(0, 0, 0, 0.65);
+
+    color: #ffffff;
+    font-family: 'KiwiSoda', sans-serif;
+    font-size: 24px;
+    font-weight: normal;
+    letter-spacing: 3px;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.menu-button:hover {
+    background: #a52a2a;
+    border-color: #ffcf8a;
+    transform: scale(1.06);
+}
+
+.menu-button:active {
+    transform: scale(0.97);
+}
+
+/* Painéis e janelas */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    width: min(90%, 400px);
+    padding: 35px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+
+    background: #222222;
+    border: 2px solid #a52a2a;
+    color: white;
+
+    text-align: center;
+}
+
+.modal-content h2 {
+    letter-spacing: 3px;
+}
+
+.modal-content p {
+    color: #ffcf8a;
+}
+
+/* Preferências e configurações */
+
+.setting-item {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.setting-item label {
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+.volume-container {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.volume-container input {
+    flex: 1;
+    accent-color: #a52a2a;
+    cursor: pointer;
+}
+
+.volume-container span {
+    min-width: 45px;
+    color: #ffcf8a;
+}
+
+#fullscreen-control {
+    width: 20px;
+    height: 20px;
+    accent-color: #a52a2a;
+    cursor: pointer;
+}
+
+/* Seleção de modo */
+
+#mode-panel .modal-content {
+    gap: 20px;
+}
+
+#mode-panel h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.mode-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Preparação da partida */
+
+.setup-content {
+    width: min(95%, 650px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+
+    background: #222222;
+    border: 2px solid #a52a2a;
+    color: white;
+    text-align: center;
+}
+
+.setup-content h2 {
+    letter-spacing: 3px;
+}
+
+.setup-content h3 {
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+#difficulty-select {
+    width: 100%;
+    padding: 12px;
+
+    background: #222;
+    color: white;
+    border: 1px solid #a52a2a;
+
+    font-family: inherit;
+    font-size: 18px;
+}
+
+#difficulty-select option {
+    background: #222;
+    color: white;
+}
+
+/* Seleção das arenas */
+
+.arena-container {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.arena-card {
+    min-width: 0;
+    overflow: hidden;
+
+    border: 3px solid #555;
+    background: #151515;
+    color: white;
+
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+.arena-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.arena-card span {
+    display: block;
+    padding: 12px 5px;
+    font-size: 16px;
+}
+
+.arena-card:hover {
+    transform: scale(1.03);
+    border-color: #ffcf8a;
+}
+
+.arena-card.selected {
+    border-color: #ffcf8a;
+    box-shadow: 0 0 12px #a52a2a;
+}
+
+#arena-message {
+    color: #ffcf8a;
+}
+
+.setup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Seleção de personagens */
+
+#character-panel {
+    background: rgba(0, 0, 0, 0.92);
+}
+
+.character-screen {
+    width: min(95%, 1100px);
+    max-height: 95vh;
+    overflow-y: auto;
+    padding: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+
+    color: white;
+    text-align: center;
+}
+
+.character-screen>h2 {
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: 5px;
+    color: #ffcf8a;
+    text-shadow: 3px 3px #8b2525;
+}
+
+.fighters-container {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.fighter-player {
+    min-width: 0;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+
+    background: rgba(35, 35, 35, 0.85);
+    border: 2px solid #555;
+}
+
+.fighter-player h3 {
+    font-size: 25px;
+    letter-spacing: 3px;
+}
+
+#preview-player-1 {
+    border-color: #a52a2a;
+}
+
+#preview-player-2 {
+    border-color: #386db5;
+}
+
+.fighter-preview {
+    width: 100%;
+    height: 220px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #151515;
+    border: 1px solid #555;
+}
+
+.fighter-placeholder {
+    font-size: 70px;
+    color: #777;
+    opacity: 0.5;
+}
+
+.fighter-options {
+    width: 100%;
+
+    display: flex;
+    gap: 10px;
+}
+
+.fighter-option {
+    flex: 1;
+    padding: 12px 5px;
+
+    background: #222;
+    border: 2px solid #555;
+
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.fighter-option:hover {
+    border-color: #ffcf8a;
+    background: #49302b;
+}
+
+.fighter-option.selected {
+    border-color: #ffcf8a;
+    background: #8b2525;
+    box-shadow: 0 0 12px #a52a2a;
+}
+
+.fighter-player p {
+    color: #ffcf8a;
+    font-size: 14px;
+}
+
+.character-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+#confirm-fighters:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.fighter-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.fighter-preview img {
+    height: 250px;
+    max-width: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+
+
+/* =========================================================
+   12. TELA DE COMBATE - MATH FIGHTERS
+   ========================================================= */
+
+#combat-panel {
+    padding: 0;
+    background: #090811;
+    overflow: hidden;
+}
+
+.combat-screen {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: 100vh;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #fff;
+    background: #100d19;
+    font-family: 'KiwiSoda', sans-serif;
+}
+
+/* ---------------------------------------------------------
+   CABEÇALHO
+   --------------------------------------------------------- */
+
+.combat-header {
+    position: relative;
+    z-index: 5;
+    flex: 0 0 58px;
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #292036, #171321);
+    border-bottom: 3px solid #e34b61;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.55);
+}
+
+.combat-header h2 {
+    color: #ffcf78;
+    font-size: clamp(18px, 2vw, 27px);
+    letter-spacing: 4px;
+    text-shadow: 3px 3px #8b263d;
+}
+
+.combat-header .menu-button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* ---------------------------------------------------------
+   HUD DOS JOGADORES
+   --------------------------------------------------------- */
+
+.combat-hud {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    min-height: 112px;
+    padding: 13px 5%;
+    display: grid;
+    grid-template-columns: 1fr 100px 1fr;
+    align-items: center;
+    gap: 25px;
+    background: linear-gradient(180deg, #211a2d, #171321);
+    border-bottom: 2px solid rgba(255, 207, 120, 0.35);
+}
+
+.combat-player-info {
+    width: 100%;
+    min-width: 0;
+    max-width: 480px;
+}
+
+.combat-player-info:first-child {
+    justify-self: start;
+}
+
+.combat-player-info:last-child {
+    justify-self: end;
+    text-align: right;
+}
+
+.combat-player-info h3 {
+    margin-bottom: 7px;
+    color: #fff;
+    font-size: clamp(13px, 1.5vw, 19px);
+    letter-spacing: 2px;
+    text-shadow: 2px 2px #000;
+}
+
+.health-bar {
+    width: 100%;
+    height: 23px;
+    padding: 3px;
+    overflow: hidden;
+    background: #08070c;
+    border: 2px solid #e8c77e;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+.health-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #1d9d50, #67ed79);
+    box-shadow: 0 0 9px rgba(70, 255, 120, 0.45);
+    transition: width 0.35s ease;
+}
+
+.power-meter {
+    width: 100%;
+    margin-top: 9px;
+}
+
+.power-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: #d8d3e4;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.power-bar {
+    width: 100%;
+    height: 12px;
+    overflow: hidden;
+    background: #090811;
+    border: 1px solid #5c4c83;
+    border-radius: 2px;
+}
+
+.power-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #087bd2, #00eaff);
+    box-shadow: 0 0 10px #00cfff;
+    transition: width 0.25s ease;
+}
+
+/* Informações centrais do round */
+
+.combat-center-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.combat-timer {
+    color: #ffdb7d;
+    font-size: clamp(27px, 3vw, 39px);
+    line-height: 1;
+    text-shadow: 3px 3px #8b263d, 0 0 12px rgba(255, 207, 120, 0.4);
+}
+
+#combat-round {
+    color: #d8d3e4;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------
+   ARENA
+   --------------------------------------------------------- */
+
+#combat-arena {
+    position: relative;
+    isolation: isolate;
+    flex: 1 1 auto;
+    min-height: 250px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 10% 25px;
+    overflow: hidden;
+    background-color: #171321;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Camadas visuais da arena */
+
+.arena-atmosphere {
+    inset: 0;
+    z-index: -4;
+
+    background: linear-gradient(
+        180deg,
+        rgba(12, 8, 22, 0.02) 0%,
+        rgba(12, 8, 22, 0.02) 55%,
+        rgba(8, 6, 14, 0.25) 100%
+    );
+}
+
+.arena-background {
+    inset: 0;
+    z-index: -5;
+    background-position: center;
+    background-size: cover;
+}
+
+.arena-atmosphere {
+    inset: 0;
+    z-index: -4;
+    background: linear-gradient(
+        180deg,
+        rgba(12, 8, 22, 0.12) 0%,
+        rgba(12, 8, 22, 0.05) 45%,
+        rgba(8, 6, 14, 0.45) 100%
+    );
+}
+
+.arena-midground {
+    inset: 35% 0 0;
+    z-index: -3;
+    background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(10, 8, 17, 0.25)
+    );
+}
+
+.arena-ground {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 19%;
+    z-index: -2;
+    background: linear-gradient(
+        180deg,
+        rgba(20, 15, 27, 0.15),
+        rgba(8, 7, 13, 0.88)
+    );
+    border-top: 2px solid rgba(255, 207, 120, 0.22);
+}
+
+.arena-ground-light {
+    left: 10%;
+    right: 10%;
+    bottom: 17%;
+    height: 3px;
+    z-index: -1;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 207, 120, 0.65),
+        transparent
+    );
+    box-shadow: 0 0 15px rgba(255, 207, 120, 0.35);
+}
+
+#arena-effects {
+    inset: 0;
+    z-index: 2;
+}
+
+/* ---------------------------------------------------------
+   LUTADORES
+   --------------------------------------------------------- */
+
+.combat-fighter {
+    position: relative;
+    z-index: 3;
+    width: 38%;
+    height: 88%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transform-origin: center bottom;
+}
+
+.combat-fighter img {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    image-rendering: pixelated;
+    user-select: none;
+    -webkit-user-drag: none;
+
+    filter: drop-shadow(5px 7px 3px rgba(0, 0, 0, 0.65));
+}
+
+.fighter-right img {
+    transform: scaleX(-1);
+}
+
+/* Configurações gerais */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'KiwiSoda', Arial, Helvetica, sans-serif;
+    background-color: #151515;
+    color: white;
+}
+
+button,
+input,
+select {
+    font-family: inherit;
+}
+
+/* Menu principal */
+
+.menu-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+
+    background-image: url('../assets/images/backgrounds/menu.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.menu-content {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 55px;
+}
+
+/* O HTML utiliza h1 sem a classe game-title */
+.game-title,
+.menu-content h1 {
+    color: #ffffff;
+    font-size: clamp(36px, 6vw, 76px);
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-align: center;
+
+    text-shadow:
+        4px 4px 0 #8b2525,
+        7px 7px 0 #000000;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.menu-button {
+    width: 260px;
+    padding: 15px 20px;
+
+    border: 2px solid #ffffff;
+    background: rgba(0, 0, 0, 0.65);
+
+    color: #ffffff;
+    font-family: 'KiwiSoda', sans-serif;
+    font-size: 24px;
+    font-weight: normal;
+    letter-spacing: 3px;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.menu-button:hover {
+    background: #a52a2a;
+    border-color: #ffcf8a;
+    transform: scale(1.06);
+}
+
+.menu-button:active {
+    transform: scale(0.97);
+}
+
+/* Painéis e janelas */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal.hidden {
+    display: none !important;
+}
+
+.modal-content {
+    width: min(90%, 400px);
+    padding: 35px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+
+    background: #222222;
+    border: 2px solid #a52a2a;
+    color: white;
+
+    text-align: center;
+}
+
+.modal-content h2 {
+    letter-spacing: 3px;
+}
+
+.modal-content p {
+    color: #ffcf8a;
+}
+
+/* Preferências e configurações */
+
+.setting-item {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.setting-item label {
+    font-size: 18px;
+    letter-spacing: 2px;
+}
+
+.volume-container {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.volume-container input {
+    flex: 1;
+    accent-color: #a52a2a;
+    cursor: pointer;
+}
+
+.volume-container span {
+    min-width: 45px;
+    color: #ffcf8a;
+}
+
+#fullscreen-control {
+    width: 20px;
+    height: 20px;
+    accent-color: #a52a2a;
+    cursor: pointer;
+}
+
+/* Seleção de modo */
+
+#mode-panel .modal-content {
+    gap: 20px;
+}
+
+#mode-panel h2 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.mode-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Preparação da partida */
+
+.setup-content {
+    width: min(95%, 650px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+
+    background: #222222;
+    border: 2px solid #a52a2a;
+    color: white;
+    text-align: center;
+}
+
+.setup-content h2 {
+    letter-spacing: 3px;
+}
+
+.setup-content h3 {
+    margin-bottom: 5px;
+    letter-spacing: 2px;
+}
+
+#difficulty-select {
+    width: 100%;
+    padding: 12px;
+
+    background: #222;
+    color: white;
+    border: 1px solid #a52a2a;
+
+    font-family: inherit;
+    font-size: 18px;
+}
+
+#difficulty-select option {
+    background: #222;
+    color: white;
+}
+
+/* Seleção das arenas */
+
+.arena-container {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.arena-card {
+    min-width: 0;
+    overflow: hidden;
+
+    border: 3px solid #555;
+    background: #151515;
+    color: white;
+
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+.arena-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.arena-card span {
+    display: block;
+    padding: 12px 5px;
+    font-size: 16px;
+}
+
+.arena-card:hover {
+    transform: scale(1.03);
+    border-color: #ffcf8a;
+}
+
+.arena-card.selected {
+    border-color: #ffcf8a;
+    box-shadow: 0 0 12px #a52a2a;
+}
+
+#arena-message {
+    color: #ffcf8a;
+}
+
+.setup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Seleção de personagens */
+
+#character-panel {
+    background: rgba(0, 0, 0, 0.92);
+}
+
+.character-screen {
+    width: min(95%, 1100px);
+    max-height: 95vh;
+    overflow-y: auto;
+    padding: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+
+    color: white;
+    text-align: center;
+}
+
+.character-screen>h2 {
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: 5px;
+    color: #ffcf8a;
+    text-shadow: 3px 3px #8b2525;
+}
+
+.fighters-container {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.fighter-player {
+    min-width: 0;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+
+    background: rgba(35, 35, 35, 0.85);
+    border: 2px solid #555;
+}
+
+.fighter-player h3 {
+    font-size: 25px;
+    letter-spacing: 3px;
+}
+
+#preview-player-1 {
+    border-color: #a52a2a;
+}
+
+#preview-player-2 {
+    border-color: #386db5;
+}
+
+.fighter-preview {
+    width: 100%;
+    height: 220px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #151515;
+    border: 1px solid #555;
+}
+
+.fighter-placeholder {
+    font-size: 70px;
+    color: #777;
+    opacity: 0.5;
+}
+
+.fighter-options {
+    width: 100%;
+
+    display: flex;
+    gap: 10px;
+}
+
+.fighter-option {
+    flex: 1;
+    padding: 12px 5px;
+
+    background: #222;
+    border: 2px solid #555;
+
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.fighter-option:hover {
+    border-color: #ffcf8a;
+    background: #49302b;
+}
+
+.fighter-option.selected {
+    border-color: #ffcf8a;
+    background: #8b2525;
+    box-shadow: 0 0 12px #a52a2a;
+}
+
+.fighter-player p {
+    color: #ffcf8a;
+    font-size: 14px;
+}
+
+.character-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+#confirm-fighters:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.fighter-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    overflow: hidden;
+}
+
+.fighter-preview img {
+    height: 250px;
+    max-width: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+
+
+/* =========================================================
+   12. TELA DE COMBATE - MATH FIGHTERS
+   ========================================================= */
+
+#combat-panel {
+    padding: 0;
+    background: #090811;
+    overflow: hidden;
+}
+
+.combat-screen {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    height: 100vh;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #fff;
+    background: #100d19;
+    font-family: 'KiwiSoda', sans-serif;
+}
+
+/* ---------------------------------------------------------
+   CABEÇALHO
+   --------------------------------------------------------- */
+
+.combat-header {
+    position: relative;
+    z-index: 5;
+    flex: 0 0 58px;
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #292036, #171321);
+    border-bottom: 3px solid #e34b61;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.55);
+}
+
+.combat-header h2 {
+    color: #ffcf78;
+    font-size: clamp(18px, 2vw, 27px);
+    letter-spacing: 4px;
+    text-shadow: 3px 3px #8b263d;
+}
+
+.combat-header .menu-button {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+/* ---------------------------------------------------------
+   HUD DOS JOGADORES
+   --------------------------------------------------------- */
+
+.combat-hud {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    min-height: 112px;
+    padding: 13px 5%;
+    display: grid;
+    grid-template-columns: 1fr 100px 1fr;
+    align-items: center;
+    gap: 25px;
+    background: linear-gradient(180deg, #211a2d, #171321);
+    border-bottom: 2px solid rgba(255, 207, 120, 0.35);
+}
+
+.combat-player-info {
+    width: 100%;
+    min-width: 0;
+    max-width: 480px;
+}
+
+.combat-player-info:first-child {
+    justify-self: start;
+}
+
+.combat-player-info:last-child {
+    justify-self: end;
+    text-align: right;
+}
+
+.combat-player-info h3 {
+    margin-bottom: 7px;
+    color: #fff;
+    font-size: clamp(13px, 1.5vw, 19px);
+    letter-spacing: 2px;
+    text-shadow: 2px 2px #000;
+}
+
+.health-bar {
+    width: 100%;
+    height: 23px;
+    padding: 3px;
+    overflow: hidden;
+    background: #08070c;
+    border: 2px solid #e8c77e;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+.health-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #1d9d50, #67ed79);
+    box-shadow: 0 0 9px rgba(70, 255, 120, 0.45);
+    transition: width 0.35s ease;
+}
+
+.power-meter {
+    width: 100%;
+    margin-top: 9px;
+}
+
+.power-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: #d8d3e4;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.power-bar {
+    width: 100%;
+    height: 12px;
+    overflow: hidden;
+    background: #090811;
+    border: 1px solid #5c4c83;
+    border-radius: 2px;
+}
+
+.power-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #087bd2, #00eaff);
+    box-shadow: 0 0 10px #00cfff;
+    transition: width 0.25s ease;
+}
+
+/* Informações centrais do round */
+
+.combat-center-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.combat-timer {
+    color: #ffdb7d;
+    font-size: clamp(27px, 3vw, 39px);
+    line-height: 1;
+    text-shadow: 3px 3px #8b263d, 0 0 12px rgba(255, 207, 120, 0.4);
+}
+
+#combat-round {
+    color: #d8d3e4;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------
+   ARENA
+   --------------------------------------------------------- */
+
+#combat-arena {
+    position: relative;
+    isolation: isolate;
+    flex: 1 1 auto;
+    min-height: 250px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 10% 25px;
+    overflow: hidden;
+    background-color: #171321;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* Camadas visuais da arena */
+
+.arena-atmosphere,
+.arena-background,
+.arena-midground,
+.arena-ground,
+.arena-ground-light,
+#arena-effects {
+    position: absolute;
+    pointer-events: none;
+}
+
+.arena-background {
+    inset: 0;
+    z-index: -5;
+    background-position: center;
+    background-size: cover;
+}
+
+.arena-atmosphere {
+    inset: 0;
+    z-index: -4;
+    background: linear-gradient(
+        180deg,
+        rgba(12, 8, 22, 0.12) 0%,
+        rgba(12, 8, 22, 0.05) 45%,
+        rgba(8, 6, 14, 0.45) 100%
+    );
+}
+
+.arena-midground {
+    inset: 35% 0 0;
+    z-index: -3;
+    background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(10, 8, 17, 0.25)
+    );
+}
+
+.arena-ground {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 19%;
+    z-index: -2;
+    background: linear-gradient(
+        180deg,
+        rgba(20, 15, 27, 0.15),
+        rgba(8, 7, 13, 0.88)
+    );
+    border-top: 2px solid rgba(255, 207, 120, 0.22);
+}
+
+.arena-ground-light {
+    left: 10%;
+    right: 10%;
+    bottom: 17%;
+    height: 3px;
+    z-index: -1;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 207, 120, 0.65),
+        transparent
+    );
+    box-shadow: 0 0 15px rgba(255, 207, 120, 0.35);
+}
+
+#arena-effects {
+    inset: 0;
+    z-index: 2;
+}
+
+/* ---------------------------------------------------------
+   LUTADORES
+   --------------------------------------------------------- */
+
+.combat-fighter {
+    position: relative;
+    z-index: 3;
+    width: 38%;
+    height: 88%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transform-origin: center bottom;
+}
+
+.combat-fighter img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    image-rendering: pixelated;
+    filter: drop-shadow(5px 7px 3px rgba(0, 0, 0, 0.65));
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.fighter-right img {
+    transform: scaleX(-1);
+}
+
+/* Sombra no chão */
+
+.combat-fighter::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    bottom: 0;
+    left: 15%;
+    width: 70%;
+    height: 13px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    filter: blur(5px);
+}
+
+/* ---------------------------------------------------------
+   DESAFIOS MATEMÁTICOS
+   --------------------------------------------------------- */
+
+.math-challenge {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    background: rgba(5, 4, 10, 0.82);
+}
+
+.math-challenge.hidden {
+    display: none !important;
+}
+
+.math-challenge-card {
+    position: relative;
+    width: min(420px, 100%);
+    padding: 30px;
+
+    background: linear-gradient(145deg, #292036, #15111e);
+    border: 3px solid #00cfff;
+    box-shadow: 0 0 25px rgba(0, 207, 255, 0.25);
+
+    text-align: center;
+}
+
+.math-challenge-card.hidden {
+    display: none !important;
+}
+
+.challenge-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    color: #ffcf78;
+    font-size: 18px;
+}
+
+.math-question {
+    margin: 25px 0;
+    color: #fff;
+    font-size: clamp(27px, 5vw, 38px);
+    text-shadow: 3px 3px #8b263d;
+}
+
+.math-challenge-card label {
+    display: block;
+    margin-top: 15px;
+    color: #d8d3e4;
+}
+
+.math-challenge-card input {
+    width: 100%;
+    margin: 15px 0;
+    padding: 13px;
+
+    background: #090811;
+    border: 2px solid #76618f;
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 21px;
+    text-align: center;
+    outline: none;
+}
+
+.math-challenge-card input:focus {
+    border-color: #00cfff;
+    box-shadow: 0 0 10px rgba(0, 207, 255, 0.35);
+}
+
+.math-feedback {
+    min-height: 25px;
+    margin: 10px 0;
+    color: #ffcf78;
+    font-size: 15px;
+}
+
+/* ---------------------------------------------------------
+   INTRODUÇÃO DO ROUND
+   --------------------------------------------------------- */
+
+#round-intro {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+    background: rgba(7, 5, 13, 0.25);
+    text-align: center;
+}
+
+#round-intro.hidden {
+    display: none !important;
+}
+
+#round-intro-text {
+    color: #ffcf78;
+    font-size: clamp(35px, 7vw, 76px);
+    letter-spacing: 7px;
+    text-shadow:
+        4px 4px #8b263d,
+        7px 7px #000;
+    animation: introAppear 0.5s ease both;
+}
+
+#round-fight-text {
+    color: #fff;
+    font-size: clamp(45px, 9vw, 100px);
+    letter-spacing: 10px;
+    text-shadow:
+        5px 5px #a52a2a,
+        8px 8px #000;
+    animation: fightAppear 0.45s ease both;
+}
+
+@keyframes introAppear {
+    from {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fightAppear {
+    from {
+        opacity: 0;
+        transform: scale(2);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ---------------------------------------------------------
+   EFEITO DE IMPACTO
+   --------------------------------------------------------- */
+
+#combat-impact {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 12;
+    width: 110px;
+    height: 110px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+}
+
+#combat-impact.impact-active {
+    animation: impactEffect 0.35s ease-out;
+}
+
+#combat-impact::before,
+#combat-impact::after {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 5px solid #ffcf78;
+    clip-path: polygon(
+        50% 0%, 62% 35%, 100% 50%,
+        65% 65%, 50% 100%, 35% 65%,
+        0% 50%, 35% 35%
+    );
+}
+
+#combat-impact::after {
+    transform: rotate(45deg) scale(0.65);
+    border-color: #fff;
+}
+
+@keyframes impactEffect {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5) rotate(90deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2) rotate(180deg);
+    }
+}
+
+/* ---------------------------------------------------------
+   ANIMAÇÕES DOS LUTADORES
+   --------------------------------------------------------- */
+
+.fighter-left.attack-light {
+    animation: attackLeft 0.25s ease-in-out;
+}
+
+.fighter-left.attack-counter {
+    animation: attackLeft 0.35s ease-in-out;
+}
+
+.fighter-left.attack-special {
+    animation: attackLeftSpecial 0.5s ease-in-out;
+}
+
+.fighter-right.attack-light {
+    animation: attackRight 0.25s ease-in-out;
+}
+
+.fighter-right.attack-counter {
+    animation: attackRight 0.35s ease-in-out;
+}
+
+.fighter-right.attack-special {
+    animation: attackRightSpecial 0.5s ease-in-out;
+}
+
+@keyframes attackLeft {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(65px); }
+}
+
+@keyframes attackRight {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-65px); }
+}
+
+@keyframes attackLeftSpecial {
+    0% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(100px) scale(1.12);
+        filter: brightness(1.8);
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+@keyframes attackRightSpecial {
+    0% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(-100px) scale(1.12);
+        filter: brightness(1.8);
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+.fighter-left.hit-reaction {
+    animation: hitLeft 0.3s ease-in-out;
+}
+
+.fighter-right.hit-reaction {
+    animation: hitRight 0.3s ease-in-out;
+}
+
+@keyframes hitLeft {
+    0%, 100% { transform: translateX(0); }
+    40% {
+        transform: translateX(-25px);
+        filter: brightness(2);
+    }
+}
+
+@keyframes hitRight {
+    0%, 100% { transform: translateX(0); }
+    40% {
+        transform: translateX(25px);
+        filter: brightness(2);
+    }
+}
+
+/* Tremor da arena */
+
+#combat-arena.screen-shake {
+    animation: screenShake 0.3s ease-in-out;
+}
+
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-5px, 2px); }
+    40% { transform: translate(5px, -2px); }
+    60% { transform: translate(-4px, 1px); }
+    80% { transform: translate(4px, -1px); }
+}
+
+/* ---------------------------------------------------------
+   RODAPÉ E CONTROLES
+   --------------------------------------------------------- */
+
+.combat-footer {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #211a2d, #171321);
+    border-top: 2px solid #d83c55;
+}
+
+.combat-footer p {
+    margin: 0;
+    color: #ffcf78;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+#combat-status {
+    padding: 5px;
+    color: #fff;
+    text-align: center;
+}
+
+/* Dicas de teclado */
+
+.keyboard-hints {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.keyboard-hints span {
+    color: #d8d3e4;
+    font-size: 12px;
+}
+
+.keyboard-hints strong {
+    display: inline-block;
+    min-width: 25px;
+    padding: 3px 6px;
+    background: #332842;
+    border: 1px solid #ffcf78;
+    color: #ffcf78;
+    text-align: center;
+}
+
+
+/* =========================================================
+   CORREÇÃO DOS SPRITES E ANIMAÇÕES
+   ========================================================= */
+
+/* Imagens dos personagens */
+#fighter-container-1 img,
+#fighter-container-2 img {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    image-rendering: pixelated;
+}
+
+/* Ataque normal */
+.combat-fighter.attacking {
+    animation: fighterAttack 0.3s ease-in-out;
+}
+
+/* Ataque especial */
+.combat-fighter.special-attacking {
+    animation: fighterSpecial 0.5s ease-in-out;
+}
+
+/* Receber dano */
+.combat-fighter.taking-hit {
+    animation: fighterHit 0.3s ease-in-out;
+}
+
+@keyframes fighterAttack {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(var(--attack-direction, 45px));
+    }
+}
+
+#fighter-container-2.attacking {
+    --attack-direction: -45px;
+}
+
+@keyframes fighterSpecial {
+    0%, 100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(var(--attack-direction, 75px)) scale(1.08);
+        filter: brightness(1.6);
+    }
+}
+
+#fighter-container-2.special-attacking {
+    --attack-direction: -75px;
+}
+
+@keyframes fighterHit {
+    0%, 100% {
+        transform: translateX(0);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(var(--hit-direction, -20px));
+        filter: brightness(2);
+    }
+}
+
+#fighter-container-2.taking-hit {
+    --hit-direction: 20px;
+}
+
+/* Evita desfoque na tela de combate */
+.combat-screen,
+#combat-arena,
+.combat-fighter,
+.combat-fighter img {
+    filter: none;
+    backdrop-filter: none;
+}
+
+
+/* ---------------------------------------------------------
+   RESPONSIVIDADE
+   --------------------------------------------------------- */
+
+@media (max-width: 800px) {
+    .combat-header {
+        padding: 8px 15px;
+    }
+
+    .combat-hud {
+        grid-template-columns: 1fr 65px 1fr;
+        gap: 12px;
+        padding: 12px 3%;
+    }
+
+    #combat-arena {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .combat-fighter {
+        width: 43%;
+    }
+}
+
+@media (max-width: 650px) {
+    .combat-screen {
+        min-height: 420px;
+    }
+
+    .combat-header {
+        flex-basis: 48px;
+    }
+
+    .combat-header h2 {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+    .combat-header .menu-button {
+        padding: 6px 9px;
+        font-size: 10px;
+    }
+
+    .combat-hud {
+        min-height: 95px;
+        grid-template-columns: 1fr 48px 1fr;
+        gap: 8px;
+        padding: 9px 3%;
+    }
+
+    .combat-player-info h3 {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .health-bar {
+        height: 17px;
+    }
+
+    .power-meter {
+        margin-top: 6px;
+    }
+
+    .power-label {
+        font-size: 9px;
+    }
+
+    .power-bar {
+        height: 9px;
+    }
+
+    .combat-timer {
+        font-size: 23px;
+    }
+
+    #combat-round {
+        font-size: 9px;
+    }
+
+    #combat-arena {
+        padding: 0 1% 15px;
+    }
+
+    .combat-fighter {
+        width: 48%;
+        height: 82%;
+    }
+
+    .combat-footer {
+        min-height: 42px;
+        padding: 6px;
+    }
+
+    .combat-footer p {
+        font-size: 10px;
+    }
+
+    .keyboard-hints {
+        gap: 6px;
+    }
+
+    .keyboard-hints span {
+        font-size: 9px;
+    }
+
+    .keyboard-hints strong {
+        min-width: 19px;
+        padding: 2px 4px;
+    }
+
+    .math-challenge-content {
+        padding: 22px;
+    }
+}
+
+@media (max-height: 600px) {
+    .combat-header {
+        flex-basis: 45px;
+    }
+
+    .combat-hud {
+        min-height: 82px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    .combat-fighter {
+        height: 80%;
+    }
+
+    .combat-footer {
+        min-height: 35px;
+    }
+}
+
+
+/* Sombra no chão */
+
+.combat-fighter::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    bottom: 0;
+    left: 15%;
+    width: 70%;
+    height: 13px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    filter: blur(5px);
+}
+
+/* ---------------------------------------------------------
+   DESAFIOS MATEMÁTICOS
+   --------------------------------------------------------- */
+
+.math-challenge {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    background: rgba(5, 4, 10, 0.82);
+}
+
+.math-challenge.hidden {
+    display: none !important;
+}
+
+.math-challenge-card {
+    position: relative;
+    width: min(420px, 100%);
+    padding: 30px;
+
+    background: linear-gradient(145deg, #292036, #15111e);
+    border: 3px solid #00cfff;
+    box-shadow: 0 0 25px rgba(0, 207, 255, 0.25);
+
+    text-align: center;
+}
+
+.math-challenge-card.hidden {
+    display: none !important;
+}
+
+.challenge-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    color: #ffcf78;
+    font-size: 18px;
+}
+
+.math-question {
+    margin: 25px 0;
+    color: #fff;
+    font-size: clamp(27px, 5vw, 38px);
+    text-shadow: 3px 3px #8b263d;
+}
+
+.math-challenge-card label {
+    display: block;
+    margin-top: 15px;
+    color: #d8d3e4;
+}
+
+.math-challenge-card input {
+    width: 100%;
+    margin: 15px 0;
+    padding: 13px;
+
+    background: #090811;
+    border: 2px solid #76618f;
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 21px;
+    text-align: center;
+    outline: none;
+}
+
+.math-challenge-card input:focus {
+    border-color: #00cfff;
+    box-shadow: 0 0 10px rgba(0, 207, 255, 0.35);
+}
+
+.math-feedback {
+    min-height: 25px;
+    margin: 10px 0;
+    color: #ffcf78;
+    font-size: 15px;
+}
+
+/* ---------------------------------------------------------
+   INTRODUÇÃO DO ROUND
+   --------------------------------------------------------- */
+
+#round-intro {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+    background: rgba(7, 5, 13, 0.25);
+    text-align: center;
+}
+
+#round-intro.hidden {
+    display: none !important;
+}
+
+#round-intro-text {
+    color: #ffcf78;
+    font-size: clamp(35px, 7vw, 76px);
+    letter-spacing: 7px;
+    text-shadow:
+        4px 4px #8b263d,
+        7px 7px #000;
+    animation: introAppear 0.5s ease both;
+}
+
+#round-fight-text {
+    color: #fff;
+    font-size: clamp(45px, 9vw, 100px);
+    letter-spacing: 10px;
+    text-shadow:
+        5px 5px #a52a2a,
+        8px 8px #000;
+    animation: fightAppear 0.45s ease both;
+}
+
+@keyframes introAppear {
+    from {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fightAppear {
+    from {
+        opacity: 0;
+        transform: scale(2);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ---------------------------------------------------------
+   EFEITO DE IMPACTO
+   --------------------------------------------------------- */
+
+#combat-impact {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 12;
+    width: 110px;
+    height: 110px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+}
+
+#combat-impact.impact-active {
+    animation: impactEffect 0.35s ease-out;
+}
+
+#combat-impact::before,
+#combat-impact::after {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 5px solid #ffcf78;
+    clip-path: polygon(
+        50% 0%, 62% 35%, 100% 50%,
+        65% 65%, 50% 100%, 35% 65%,
+        0% 50%, 35% 35%
+    );
+}
+
+#combat-impact::after {
+    transform: rotate(45deg) scale(0.65);
+    border-color: #fff;
+}
+
+@keyframes impactEffect {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.5) rotate(90deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2) rotate(180deg);
+    }
+}
+
+/* ---------------------------------------------------------
+   ANIMAÇÕES DOS LUTADORES
+   --------------------------------------------------------- */
+
+.fighter-left.attack-light {
+    animation: attackLeft 0.25s ease-in-out;
+}
+
+.fighter-left.attack-counter {
+    animation: attackLeft 0.35s ease-in-out;
+}
+
+.fighter-left.attack-special {
+    animation: attackLeftSpecial 0.5s ease-in-out;
+}
+
+.fighter-right.attack-light {
+    animation: attackRight 0.25s ease-in-out;
+}
+
+.fighter-right.attack-counter {
+    animation: attackRight 0.35s ease-in-out;
+}
+
+.fighter-right.attack-special {
+    animation: attackRightSpecial 0.5s ease-in-out;
+}
+
+@keyframes attackLeft {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(65px); }
+}
+
+@keyframes attackRight {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-65px); }
+}
+
+@keyframes attackLeftSpecial {
+    0% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(100px) scale(1.12);
+        filter: brightness(1.8);
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+@keyframes attackRightSpecial {
+    0% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(-100px) scale(1.12);
+        filter: brightness(1.8);
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+.fighter-left.hit-reaction {
+    animation: hitLeft 0.3s ease-in-out;
+}
+
+.fighter-right.hit-reaction {
+    animation: hitRight 0.3s ease-in-out;
+}
+
+@keyframes hitLeft {
+    0%, 100% { transform: translateX(0); }
+    40% {
+        transform: translateX(-25px);
+        filter: brightness(2);
+    }
+}
+
+@keyframes hitRight {
+    0%, 100% { transform: translateX(0); }
+    40% {
+        transform: translateX(25px);
+        filter: brightness(2);
+    }
+}
+
+/* Tremor da arena */
+
+#combat-arena.screen-shake {
+    animation: screenShake 0.3s ease-in-out;
+}
+
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-5px, 2px); }
+    40% { transform: translate(5px, -2px); }
+    60% { transform: translate(-4px, 1px); }
+    80% { transform: translate(4px, -1px); }
+}
+
+/* ---------------------------------------------------------
+   RODAPÉ E CONTROLES
+   --------------------------------------------------------- */
+
+.combat-footer {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #211a2d, #171321);
+    border-top: 2px solid #d83c55;
+}
+
+.combat-footer p {
+    margin: 0;
+    color: #ffcf78;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+#combat-status {
+    padding: 5px;
+    color: #fff;
+    text-align: center;
+}
+
+/* Dicas de teclado */
+
+.keyboard-hints {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.keyboard-hints span {
+    color: #d8d3e4;
+    font-size: 12px;
+}
+
+.keyboard-hints strong {
+    display: inline-block;
+    min-width: 25px;
+    padding: 3px 6px;
+    background: #332842;
+    border: 1px solid #ffcf78;
+    color: #ffcf78;
+    text-align: center;
+}
+
+
+/* =========================================================
+   CORREÇÃO DOS SPRITES E ANIMAÇÕES
+   ========================================================= */
+
+/* Imagens dos personagens */
+#fighter-container-1 img,
+#fighter-container-2 img {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    image-rendering: pixelated;
+}
+
+/* Ataque normal */
+.combat-fighter.attacking {
+    animation: fighterAttack 0.3s ease-in-out;
+}
+
+/* Ataque especial */
+.combat-fighter.special-attacking {
+    animation: fighterSpecial 0.5s ease-in-out;
+}
+
+/* Receber dano */
+.combat-fighter.taking-hit {
+    animation: fighterHit 0.3s ease-in-out;
+}
+
+@keyframes fighterAttack {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(var(--attack-direction, 45px));
+    }
+}
+
+#fighter-container-2.attacking {
+    --attack-direction: -45px;
+}
+
+@keyframes fighterSpecial {
+    0%, 100% {
+        transform: translateX(0) scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(var(--attack-direction, 75px)) scale(1.08);
+        filter: brightness(1.6);
+    }
+}
+
+#fighter-container-2.special-attacking {
+    --attack-direction: -75px;
+}
+
+@keyframes fighterHit {
+    0%, 100% {
+        transform: translateX(0);
+        filter: brightness(1);
+    }
+    40% {
+        transform: translateX(var(--hit-direction, -20px));
+        filter: brightness(2);
+    }
+}
+
+#fighter-container-2.taking-hit {
+    --hit-direction: 20px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVIDADE
+   --------------------------------------------------------- */
+
+@media (max-width: 800px) {    
+
+    #combat-arena {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .combat-fighter {
+        width: 43%;
+    }
+}
+
+
+@media (max-width: 650px) {
+    .combat-screen {
+        min-height: 420px;
+    }
+
+    .combat-header {
+        flex-basis: 48px;
+    }
+
+    .combat-header h2 {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+    .combat-header .menu-button {
+        padding: 6px 9px;
+        font-size: 10px;
+    }
+
+    .combat-hud {
+        min-height: 95px;
+        grid-template-columns: 1fr 48px 1fr;
+        gap: 8px;
+        padding: 9px 3%;
+    }
+
+    .combat-player-info h3 {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .health-bar {
+        height: 17px;
+    }
+
+    .power-meter {
+        margin-top: 6px;
+    }
+
+    .power-label {
+        font-size: 9px;
+    }
+
+    .power-bar {
+        height: 9px;
+    }
+
+    .combat-timer {
+        font-size: 23px;
+    }
+
+    #combat-round {
+        font-size: 9px;
+    }
+
+    #combat-arena {
+        padding: 0 1% 15px;
+    }
+
+    .combat-fighter {
+        width: 48%;
+        height: 82%;
+    }
+
+    .combat-footer {
+        min-height: 42px;
+        padding: 6px;
+    }
+
+    .combat-footer p {
+        font-size: 10px;
+    }
+
+    .keyboard-hints {
+        gap: 6px;
+    }
+
+    .keyboard-hints span {
+        font-size: 9px;
+    }
+
+    .keyboard-hints strong {
+        min-width: 19px;
+        padding: 2px 4px;
+    }
+
+    .math-challenge-content {
+        padding: 22px;
+    }
+}
+
+@media (max-height: 600px) {
+    .combat-header {
+        flex-basis: 45px;
+    }
+
+    .combat-hud {
+        min-height: 82px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    .combat-fighter {
+        height: 80%;
+    }
+
+    .combat-footer {
+        min-height: 35px;
+    }
+}
+
+    .combat-header {
+        padding: 8px 15px;
+    }
+
+    .combat-hud {
+        grid-template-columns: 1fr 65px 1fr;
+        gap: 12px;
+        padding: 12px 3%;
+    }
+
+    #combat-arena {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+
+    .combat-fighter {
+        width: 43%;
+    }
+
+@media (max-width: 650px) {
+    .combat-screen {
+        min-height: 420px;
+    }
+
+    .combat-header {
+        flex-basis: 48px;
+    }
+
+    .combat-header h2 {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+    .combat-header .menu-button {
+        padding: 6px 9px;
+        font-size: 10px;
+    }
+
+    .combat-hud {
+        min-height: 95px;
+        grid-template-columns: 1fr 48px 1fr;
+        gap: 8px;
+        padding: 9px 3%;
+    }
+
+    .combat-player-info h3 {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .health-bar {
+        height: 17px;
+    }
+
+    .power-meter {
+        margin-top: 6px;
+    }
+
+    .power-label {
+        font-size: 9px;
+    }
+
+    .power-bar {
+        height: 9px;
+    }
+
+    .combat-timer {
+        font-size: 23px;
+    }
+
+    #combat-round {
+        font-size: 9px;
+    }
+
+    #combat-arena {
+        padding: 0 1% 15px;
+    }
+
+    .combat-fighter {
+        width: 48%;
+        height: 82%;
+    }
+
+    .combat-footer {
+        min-height: 42px;
+        padding: 6px;
+    }
+
+    .combat-footer p {
+        font-size: 10px;
+    }
+
+    .keyboard-hints {
+        gap: 6px;
+    }
+
+    .keyboard-hints span {
+        font-size: 9px;
+    }
+
+    .keyboard-hints strong {
+        min-width: 19px;
+        padding: 2px 4px;
+    }
+
+    .math-challenge-content {
+        padding: 22px;
+    }
+}
+
+@media (max-height: 600px) {
+    .combat-header {
+        flex-basis: 45px;
+    }
+
+    .combat-hud {
+        min-height: 82px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+
+    .combat-fighter {
+        height: 80%;
+    }
+
+    .combat-footer {
+        min-height: 35px;
+    }
+}
