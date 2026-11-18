@@ -127,6 +127,10 @@ let trainingInterval = null;
 let trainingTurn = 1;
 let trainingAdvanceTimeout = null;
 
+// Controle da CPU (modo SOLO)
+let cpuTrainingInterval = null;
+let cpuFightInterval = null;
+
 // Controle das transições
 let roundTransitionTimeout = null;
 let roundIntroTimeout = null;
@@ -220,6 +224,233 @@ const combatTimer = document.querySelector(".combat-timer");
 const player2KeyboardHints =
     document.getElementById("player2-keyboard-hints");
 
+/* =========================================================
+SISTEMA DE SPRITES E ANIMAÇÕES
+========================================================= */
+
+const spriteSheets = {
+    personagem1: "assets/images/characters/personagem1.png",
+    personagem2: "assets/images/characters/personagem2.png"
+};
+
+const spriteAnimations = {
+    entrada: {
+        frames: [
+            { x: 20, y: 55, w: 150, h: 230 },
+            { x: 180, y: 55, w: 150, h: 230 },
+            { x: 340, y: 55, w: 150, h: 230 },
+            { x: 500, y: 55, w: 150, h: 230 },
+            { x: 660, y: 55, w: 150, h: 230 }
+        ],
+        speed: 140,
+        loop: false
+    },
+
+    // Pose parada (frame inicial da entrada) usada como "idle"
+    parado: {
+        frames: [
+            { x: 20, y: 55, w: 150, h: 230 }
+        ],
+        speed: 200,
+        loop: true
+    },
+
+    andar: {
+        frames: [
+            { x: 850, y: 65, w: 140, h: 225 },
+            { x: 990, y: 65, w: 140, h: 225 },
+            { x: 1135, y: 65, w: 140, h: 225 },
+            { x: 1265, y: 65, w: 140, h: 225 },
+            { x: 1400, y: 65, w: 130, h: 225 }
+        ],
+        speed: 110,
+        loop: true
+    },
+
+    leve: {
+        frames: [
+            { x: 30, y: 365, w: 150, h: 205 },
+            { x: 180, y: 365, w: 150, h: 205 },
+            { x: 340, y: 350, w: 190, h: 220 },
+            { x: 590, y: 355, w: 160, h: 215 }
+        ],
+        speed: 100,
+        loop: false
+    },
+
+    pesado: {
+        frames: [
+            { x: 790, y: 365, w: 160, h: 210 },
+            { x: 960, y: 350, w: 380, h: 230 },
+            { x: 1330, y: 380, w: 180, h: 200 }
+        ],
+        speed: 150,
+        loop: false
+    },
+
+    contra: {
+        frames: [
+            { x: 10, y: 640, w: 180, h: 250 },
+            { x: 180, y: 640, w: 180, h: 250 },
+            { x: 360, y: 640, w: 180, h: 250 },
+            { x: 570, y: 640, w: 180, h: 250 }
+        ],
+        speed: 120,
+        loop: false
+    }
+};
+
+const fighterSpriteStates = {
+    1: { image: null, animation: "entrada", frame: 0, timer: null },
+    2: { image: null, animation: "entrada", frame: 0, timer: null }
+};
+
+function drawFighterFrame(player) {
+    const state = fighterSpriteStates[player];
+
+    const canvas = player === 1
+        ? combatFighter1
+        : combatFighter2;
+
+    if (!state.image || !canvas) return;
+
+    const animation = spriteAnimations[state.animation];
+    if (!animation) return;
+
+    const frame = animation.frames[state.frame];
+    if (!frame) return;
+
+    const ctx = canvas.getContext("2d");
+
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    if (!width || !height) return;
+
+    const pixelRatio = window.devicePixelRatio || 1;
+
+    canvas.width = width * pixelRatio;
+    canvas.height = height * pixelRatio;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const scale = Math.min(
+        (width * 0.95) / frame.w,
+        (height * 0.95) / frame.h
+    );
+
+    const drawWidth = frame.w * scale;
+    const drawHeight = frame.h * scale;
+
+    const drawX = (width - drawWidth) / 2;
+    const drawY = height - drawHeight;
+
+    ctx.imageSmoothingEnabled = false;
+
+    ctx.drawImage(
+        state.image,
+        frame.x,
+        frame.y,
+        frame.w,
+        frame.h,
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight
+    );
+}
+
+function stopFighterTimer(state) {
+    if (state && state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+    }
+}
+
+function setFighterAnimation(player, animationName) {
+    const state = fighterSpriteStates[player];
+    const animation = spriteAnimations[animationName];
+
+    if (!state || !state.image || !animation) return;
+
+    stopFighterTimer(state);
+
+    state.animation = animationName;
+    state.frame = 0;
+
+    drawFighterFrame(player);
+
+    // Animação de um único frame que repete: não precisa de timer.
+    if (animation.loop && animation.frames.length <= 1) return;
+
+    state.timer = setInterval(() => {
+        state.frame++;
+
+        if (state.frame >= animation.frames.length) {
+            if (animation.loop) {
+                state.frame = 0;
+            } else {
+                // Terminou: volta para a pose parada (antes repetia "entrada" para sempre).
+                setFighterAnimation(player, "parado");
+                return;
+            }
+        }
+
+        drawFighterFrame(player);
+    }, animation.speed);
+}
+
+function stopFighterSprites() {
+    stopFighterTimer(fighterSpriteStates[1]);
+    stopFighterTimer(fighterSpriteStates[2]);
+}
+
+// Qual animação da spritesheet cada ataque usa
+const attackSpriteAnimations = {
+    leve: "leve",
+    contra: "contra",
+    especial: "pesado"
+};
+
+function playAttackSprite(player, attackName) {
+    const animationName = attackSpriteAnimations[attackName];
+
+    if (animationName) {
+        setFighterAnimation(player, animationName);
+    }
+}
+
+window.addEventListener("resize", () => {
+    drawFighterFrame(1);
+    drawFighterFrame(2);
+});
+
+function loadFighterSprite(player) {
+    const fighter = selectedFighters[`player${player}`];
+    const state = fighterSpriteStates[player];
+
+    if (!fighter || !state) return;
+
+    if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+    }
+
+    const image = new Image();
+
+    image.onload = () => {
+        state.image = image;
+        setFighterAnimation(player, "entrada");
+    };
+
+    image.onerror = () => {
+        console.error("Não foi possível carregar a spritesheet:", image.src);
+    };
+
+    image.src = spriteSheets[fighter];
+}
+
 
 /* =========================================================
    5. CONTROLE DOS PAINÉIS
@@ -263,6 +494,11 @@ function showMessage(title, text) {
    ========================================================= */
 
 function clearTrainingTimers() {
+    if (cpuTrainingInterval) {
+        clearInterval(cpuTrainingInterval);
+        cpuTrainingInterval = null;
+    }
+
     if (trainingInterval) {
         clearInterval(trainingInterval);
         trainingInterval = null;
@@ -275,6 +511,11 @@ function clearTrainingTimers() {
 }
 
 function clearRoundTimers() {
+    if (cpuFightInterval) {
+        clearInterval(cpuFightInterval);
+        cpuFightInterval = null;
+    }
+
     if (roundTransitionTimeout) {
         clearTimeout(roundTransitionTimeout);
         roundTransitionTimeout = null;
@@ -315,34 +556,39 @@ if (volumeControl) {
 }
 
 // Tela cheia
-if (fullscreenControl) {
-    fullscreenControl.checked =
-        localStorage.getItem("mathfighters_fullscreen") === "true";
-
-    fullscreenControl.addEventListener("change", () => {
-        localStorage.setItem(
-            "mathfighters_fullscreen",
-            fullscreenControl.checked
-        );
-    });
-}
-
 async function toggleFullscreen() {
     if (!fullscreenControl) return;
 
     try {
         if (fullscreenControl.checked) {
-            await document.documentElement.requestFullscreen();
+            if (!document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+            }
         } else if (document.fullscreenElement) {
             await document.exitFullscreen();
         }
     } catch (error) {
         console.error("Erro ao alterar tela cheia:", error);
+        fullscreenControl.checked = Boolean(document.fullscreenElement);
     }
 }
 
 if (fullscreenControl) {
+    // O navegador só libera tela cheia após um clique do jogador,
+    // então o estado salvo não é aplicado sozinho ao abrir a página.
+    fullscreenControl.checked = Boolean(document.fullscreenElement);
+
     fullscreenControl.addEventListener("change", toggleFullscreen);
+
+    // Mantém o checkbox sincronizado (ex.: jogador apertou ESC).
+    document.addEventListener("fullscreenchange", () => {
+        fullscreenControl.checked = Boolean(document.fullscreenElement);
+
+        localStorage.setItem(
+            "mathfighters_fullscreen",
+            fullscreenControl.checked
+        );
+    });
 }
 
 
@@ -360,6 +606,13 @@ if (startButton) {
             player1: null,
             player2: null
         };
+
+        // Limpa a seleção de arena da partida anterior
+        arenaCards.forEach(card => card.classList.remove("selected"));
+
+        if (arenaMessage) {
+            arenaMessage.textContent = "ESCOLHA UMA ARENA";
+        }
 
         showPanel(modePanel);
     });
@@ -498,12 +751,16 @@ function prepareCharacterSelection() {
         option.classList.remove("selected");
     });
 
+    // Mostra o preview padrão "apagado" até o jogador escolher
+    // (antes usava src = "", que gerava imagem quebrada).
     if (previewPlayer1) {
-        previewPlayer1.src = "";
+        previewPlayer1.src = "assets/images/characters/preview_personagem1.png";
+        previewPlayer1.style.opacity = "0.35";
     }
 
     if (previewPlayer2) {
-        previewPlayer2.src = "";
+        previewPlayer2.src = "assets/images/characters/preview_personagem2.png";
+        previewPlayer2.style.opacity = "0.35";
     }
 
     if (player1Status) {
@@ -608,6 +865,7 @@ fighterOptions.forEach(option => {
         if (preview) {
             preview.src =
                 `assets/images/characters/preview_${fighter}.png`;
+            preview.style.opacity = "1";
         }
 
         if (status) {
@@ -856,7 +1114,7 @@ function updatePowerBar(player) {
     }
 
     if (value) {
-        value.textContent = `${power}%`;
+        value.textContent = `${power}/${MAX_POWER}`;
     }
 }
 
@@ -881,7 +1139,7 @@ function updateHealthBar(player) {
     }
 
     if (value) {
-        value.textContent = `${life}%`;
+        value.textContent = `${life}`;
     }
 }
 
@@ -951,35 +1209,27 @@ function startCombat() {
         }
     }
 
-    // Configura o personagem 1
-    const fighter1Image =
-        `assets/images/characters/${selectedFighters.player1}.png`;
-
-    if (combatFighter1) {
-        combatFighter1.src = fighter1Image;
-
-        combatFighter1.onerror = () => {
-            console.error(
-                "Erro ao carregar o Lutador 1:",
-                fighter1Image
-            );
-        };
+    // Nomes no HUD (PLAYER / CPU no modo SOLO)
+    if (combatPlayer1Name) {
+        combatPlayer1Name.textContent = getPlayerName(1);
     }
 
-    // Configura o personagem 2
-    const fighter2Image =
-        `assets/images/characters/${selectedFighters.player2}.png`;
-
-    if (combatFighter2) {
-        combatFighter2.src = fighter2Image;
-
-        combatFighter2.onerror = () => {
-            console.error(
-                "Erro ao carregar o Lutador 2:",
-                fighter2Image
-            );
-        };
+    if (combatPlayer2Name) {
+        combatPlayer2Name.textContent = getPlayerName(2);
     }
+
+    // No modo SOLO a CPU não usa teclado: esconde as dicas do Player 2
+    if (player2KeyboardHints) {
+        player2KeyboardHints.style.visibility =
+            selectedMode === "SOLO" ? "hidden" : "visible";
+    }
+
+    // Posição inicial dos lutadores
+    resetFighterPositions();
+
+    // Carrega as spritesheets dos personagens
+    loadFighterSprite(1);
+    loadFighterSprite(2);
 
     // Atualiza as barras
     updateHealthBar(1);
@@ -990,6 +1240,8 @@ function startCombat() {
 
     // Abre a tela de combate
     showPanel(combatPanel);
+
+    startMovementLoop();
 
     // Inicia os 60 segundos de preparação
     startTrainingPhase();
@@ -1027,6 +1279,8 @@ function startTrainingPhase() {
     hideMathChallenge(1);
     hideMathChallenge(2);
 
+    resetFighterPositions();
+
     if (combatRound) {
         combatRound.textContent = `ROUND ${currentRound}`;
     }
@@ -1043,6 +1297,9 @@ function startTrainingPhase() {
 
     // Abre a primeira questão automaticamente
     openTrainingQuestion(trainingTurn);
+
+    // A CPU também acumula energia durante a preparação
+    startCpuTraining();
 
     trainingInterval = setInterval(() => {
         trainingTimeLeft--;
@@ -1155,6 +1412,10 @@ function finishTrainingPhase() {
 
         roundStarting = false;
         roundIntroTimeout = null;
+
+        // A luta começou: a CPU passa a atacar e checamos travamentos
+        startCpuFight();
+        checkFightStalemate();
     }, 1800);
 }
 
@@ -1204,7 +1465,9 @@ function displayMathChallenge(player, challenge) {
     const heading = panel.querySelector(".challenge-heading");
 
     if (heading) {
-        heading.textContent = `PLAYER ${player} - PREPARAÇÃO`;
+        // Mantém o selo "P1/P2" e troca só o texto do título
+        const title = heading.lastElementChild || heading;
+        title.textContent = `PLAYER ${player} - PREPARAÇÃO`;
     }
 
     answerInput?.focus();
@@ -1317,7 +1580,7 @@ function checkMathAnswer(player) {
    24. EXECUÇÃO DOS ATAQUES
    ========================================================= */
 
-function executeAttack(player, attackName) {
+function executeAttack(player, attackName, fromCpu = false) {
     if (
         matchOver ||
         trainingActive ||
@@ -1327,8 +1590,8 @@ function executeAttack(player, attackName) {
         return;
     }
 
-    // A CPU ainda não possui comandos de ataque próprios.
-    if (player === 2 && selectedMode === "SOLO") {
+    // No modo SOLO o Player 2 só ataca quando a ação vem da CPU.
+    if (player === 2 && selectedMode === "SOLO" && !fromCpu) {
         return;
     }
 
@@ -1371,7 +1634,46 @@ function executeAttack(player, attackName) {
     // Verifica se o adversário perdeu o round.
     if (playerLife[opponent] <= 0) {
         finishRound(player);
+        return;
     }
+
+    // Se ninguém pode mais atacar, volta para a preparação.
+    checkFightStalemate();
+}
+
+// Evita que a partida trave quando os dois jogadores ficam sem energia.
+function checkFightStalemate() {
+    if (
+        matchOver ||
+        trainingActive ||
+        roundFinished ||
+        roundStarting ||
+        roundTransitionTimeout
+    ) {
+        return;
+    }
+
+    const cheapestAttack = attackTypes.leve.cost;
+
+    if (
+        playerPower[1] >= cheapestAttack ||
+        playerPower[2] >= cheapestAttack
+    ) {
+        return;
+    }
+
+    if (combatStatus) {
+        combatStatus.textContent =
+            "AMBOS SEM ENERGIA! NOVA PREPARAÇÃO...";
+    }
+
+    roundTransitionTimeout = setTimeout(() => {
+        roundTransitionTimeout = null;
+
+        if (!matchOver && !roundFinished) {
+            startTrainingPhase();
+        }
+    }, 1500);
 }
 
 
@@ -1389,6 +1691,8 @@ function showAttackEffect(player, attackName) {
     const defender = player === 1
         ? fighterContainer2
         : fighterContainer1;
+
+    playAttackSprite(player, attackName);
 
     if (attacker) {
         attacker.classList.remove("attacking", "special-attacking");
@@ -1685,20 +1989,23 @@ if (mathAnswerPlayer2) {
 
 
 /* =========================================================
-   31. COMANDOS DE ATAQUE PELO TECLADO
+   31. CONTROLES PELO TECLADO (iguais às dicas da tela)
    ========================================================= */
 
-document.addEventListener("keydown", event => {
-    if (
-        matchOver ||
-        trainingActive ||
-        roundFinished ||
-        roundStarting ||
-        event.repeat
-    ) {
-        return;
-    }
+// PLAYER 1: A/D andar, W pular, F leve, G contra, H especial
+// PLAYER 2: setas andar/pular, J leve, K contra, L especial
 
+const attackKeys = {
+    1: { f: "leve", g: "contra", h: "especial" },
+    2: { j: "leve", k: "contra", l: "especial" }
+};
+
+const movementKeys = new Set([
+    "a", "d", "w",
+    "arrowleft", "arrowright", "arrowup"
+]);
+
+document.addEventListener("keydown", event => {
     if (
         !combatPanel ||
         combatPanel.classList.contains("hidden")
@@ -1718,26 +2025,279 @@ document.addEventListener("keydown", event => {
 
     const key = event.key.toLowerCase();
 
+    // Evita que as setas rolem a página
+    if (key.startsWith("arrow")) {
+        event.preventDefault();
+    }
+
+    if (movementKeys.has(key)) {
+        keysDown.add(key);
+    }
+
+    if (
+        matchOver ||
+        trainingActive ||
+        roundFinished ||
+        roundStarting ||
+        event.repeat
+    ) {
+        return;
+    }
+
     // PLAYER 1
-    if (key === "a") {
-        executeAttack(1, "leve");
-    } else if (key === "s") {
-        executeAttack(1, "contra");
-    } else if (key === "d") {
-        executeAttack(1, "especial");
+    if (attackKeys[1][key]) {
+        executeAttack(1, attackKeys[1][key]);
     }
 
     // PLAYER 2
-    if (selectedMode === "VERSUS LOCAL") {
-        if (key === "j") {
-            executeAttack(2, "leve");
-        } else if (key === "k") {
-            executeAttack(2, "contra");
-        } else if (key === "l") {
-            executeAttack(2, "especial");
-        }
+    if (selectedMode === "VERSUS LOCAL" && attackKeys[2][key]) {
+        executeAttack(2, attackKeys[2][key]);
     }
 });
+
+document.addEventListener("keyup", event => {
+    keysDown.delete(event.key.toLowerCase());
+});
+
+window.addEventListener("blur", () => {
+    keysDown.clear();
+});
+
+
+/* =========================================================
+   31B. MOVIMENTO E PULO DOS LUTADORES
+   ========================================================= */
+
+const keysDown = new Set();
+
+const fighterMotion = {
+    1: { x: 0, y: 0, vy: 0 },
+    2: { x: 0, y: 0, vy: 0 }
+};
+
+const movementControls = {
+    1: { left: "a", right: "d", jump: "w" },
+    2: { left: "arrowleft", right: "arrowright", jump: "arrowup" }
+};
+
+let movementFrameId = null;
+let lastMovementTime = 0;
+
+function resetFighterPositions() {
+    keysDown.clear();
+
+    [1, 2].forEach(player => {
+        fighterMotion[player] = { x: 0, y: 0, vy: 0 };
+
+        const container = player === 1
+            ? fighterContainer1
+            : fighterContainer2;
+
+        if (container) {
+            container.style.left = "0px";
+            container.style.top = "0px";
+        }
+    });
+}
+
+function canFightersMove() {
+    return (
+        !matchOver &&
+        !trainingActive &&
+        !roundFinished &&
+        !roundStarting
+    );
+}
+
+function startMovementLoop() {
+    stopMovementLoop();
+
+    lastMovementTime = performance.now();
+    movementFrameId = requestAnimationFrame(movementLoop);
+}
+
+function stopMovementLoop() {
+    if (movementFrameId) {
+        cancelAnimationFrame(movementFrameId);
+        movementFrameId = null;
+    }
+}
+
+function movementLoop(timestamp) {
+    // Para sozinho quando a tela de combate é fechada.
+    if (
+        !combatPanel ||
+        combatPanel.classList.contains("hidden") ||
+        !combatArena ||
+        !fighterContainer1 ||
+        !fighterContainer2
+    ) {
+        movementFrameId = null;
+        return;
+    }
+
+    const dt = Math.min(0.05, (timestamp - lastMovementTime) / 1000);
+    lastMovementTime = timestamp;
+
+    const arenaRect = combatArena.getBoundingClientRect();
+    const canMove = canFightersMove();
+
+    const walkSpeed = arenaRect.width * 0.25;
+    const jumpSpeed = arenaRect.height * 1.7;
+    const gravity = arenaRect.height * 5.5;
+
+    [1, 2].forEach(player => {
+        const motion = fighterMotion[player];
+        const container = player === 1
+            ? fighterContainer1
+            : fighterContainer2;
+
+        const controls = movementControls[player];
+        const isCpu = player === 2 && selectedMode === "SOLO";
+
+        let direction = 0;
+
+        if (canMove && !isCpu) {
+            if (keysDown.has(controls.left)) direction -= 1;
+            if (keysDown.has(controls.right)) direction += 1;
+
+            if (
+                keysDown.has(controls.jump) &&
+                motion.y === 0 &&
+                motion.vy === 0
+            ) {
+                motion.vy = jumpSpeed;
+            }
+        }
+
+        // Caminhada com limites: bordas da arena e o outro lutador
+        if (direction !== 0) {
+            const rect1 = fighterContainer1.getBoundingClientRect();
+            const rect2 = fighterContainer2.getBoundingClientRect();
+
+            const gap = rect2.left - rect1.right;
+            const minGap = -Math.min(rect1.width, rect2.width) * 0.2;
+            const room = Math.max(0, gap - minGap);
+
+            let dx = direction * walkSpeed * dt;
+
+            if (player === 1) {
+                dx = dx > 0
+                    ? Math.min(dx, room)
+                    : Math.max(dx, Math.min(0, arenaRect.left - rect1.left));
+            } else {
+                dx = dx < 0
+                    ? Math.max(dx, -room)
+                    : Math.min(dx, Math.max(0, arenaRect.right - rect2.right));
+            }
+
+            motion.x += dx;
+        }
+
+        // Pulo
+        if (motion.y > 0 || motion.vy !== 0) {
+            motion.y += motion.vy * dt;
+            motion.vy -= gravity * dt;
+
+            if (motion.y <= 0) {
+                motion.y = 0;
+                motion.vy = 0;
+            }
+        }
+
+        container.style.left = `${motion.x}px`;
+        container.style.top = `${-motion.y}px`;
+
+        // Troca entre parado/andando sem interromper ataques e a entrada
+        const state = fighterSpriteStates[player];
+        const busy = ["entrada", "leve", "pesado", "contra"];
+
+        if (state.image && !busy.includes(state.animation)) {
+            const wanted = direction !== 0 ? "andar" : "parado";
+
+            if (state.animation !== wanted) {
+                setFighterAnimation(player, wanted);
+            }
+        }
+    });
+
+    movementFrameId = requestAnimationFrame(movementLoop);
+}
+
+
+/* =========================================================
+   31C. CPU (MODO SOLO)
+   ========================================================= */
+
+const CPU_PROFILES = {
+    iniciante: { trainEvery: 6000, trainChance: 0.6, attackEvery: 1800 },
+    intermediario: { trainEvery: 5000, trainChance: 0.7, attackEvery: 1300 },
+    avancado: { trainEvery: 4000, trainChance: 0.8, attackEvery: 900 }
+};
+
+function getCpuProfile() {
+    return CPU_PROFILES[gameConfig?.difficulty] ||
+        CPU_PROFILES.intermediario;
+}
+
+// Durante a preparação a CPU "acerta" contas de tempos em tempos.
+function startCpuTraining() {
+    if (selectedMode !== "SOLO") return;
+
+    if (cpuTrainingInterval) {
+        clearInterval(cpuTrainingInterval);
+    }
+
+    const profile = getCpuProfile();
+
+    cpuTrainingInterval = setInterval(() => {
+        if (!trainingActive || matchOver || roundFinished) return;
+        if (Math.random() > profile.trainChance) return;
+
+        addPower(
+            2,
+            getDifficultyReward(getQuestionDifficulty())
+        );
+    }, profile.trainEvery);
+}
+
+// Durante a luta a CPU escolhe o melhor ataque que consegue pagar.
+function startCpuFight() {
+    if (selectedMode !== "SOLO") return;
+    if (matchOver || roundFinished) return;
+
+    if (cpuFightInterval) {
+        clearInterval(cpuFightInterval);
+    }
+
+    const profile = getCpuProfile();
+
+    cpuFightInterval = setInterval(() => {
+        if (
+            matchOver ||
+            trainingActive ||
+            roundFinished ||
+            roundStarting
+        ) {
+            return;
+        }
+
+        const power = playerPower[2];
+        let attackName = null;
+
+        if (power >= attackTypes.especial.cost && Math.random() < 0.6) {
+            attackName = "especial";
+        } else if (power >= attackTypes.contra.cost && Math.random() < 0.6) {
+            attackName = "contra";
+        } else if (power >= attackTypes.leve.cost) {
+            attackName = "leve";
+        }
+
+        if (attackName) {
+            executeAttack(2, attackName, true);
+        }
+    }, profile.attackEvery);
+}
 
 
 
@@ -1754,6 +2314,10 @@ if (exitCombat) {
 
         clearTrainingTimers();
         clearRoundTimers();
+
+        stopFighterSprites();
+        stopMovementLoop();
+        keysDown.clear();
 
         currentChallenges = {
             1: null,

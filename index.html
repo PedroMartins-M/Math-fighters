@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="description" content="Math Fighters - Um jogo de luta com matemática.">
 
@@ -223,10 +222,9 @@
 
             <div class="fighters-container">
 
-
                 <!-- JOGADOR 1 -->
 
-                <div class="fighter-player">
+                <div class="fighter-player" id="player-1-area">
 
                     <h3>PLAYER 1</h3>
 
@@ -234,77 +232,71 @@
                         <img src="assets/images/characters/preview_personagem1.png" alt="Personagem 1">
                     </div>
 
-                    <span class="fighter-placeholder">
-                        P1
-                    </span>
+                    <div class="fighter-options">
+
+                        <button class="fighter-option" data-player="1" data-character="personagem1" type="button">
+                            FIGHTER 01
+                        </button>
+
+                        <button class="fighter-option" data-player="1" data-character="personagem2" type="button">
+                            FIGHTER 02
+                        </button>
+
+                    </div>
+
+                    <p id="player-1-status">
+                        ESCOLHA SEU PERSONAGEM
+                    </p>
 
                 </div>
 
-                <div class="fighter-options">
 
-                    <button class="fighter-option" data-player="1" data-character="personagem1" type="button">
-                        FIGHTER 01
-                    </button>
+                <!-- JOGADOR 2 / COMPUTADOR -->
 
-                    <button class="fighter-option" data-player="1" data-character="personagem2" type="button">
-                        FIGHTER 02
-                    </button>
+                <div class="fighter-player" id="player-2-area">
+
+                    <h3 id="player-2-title">
+                        PLAYER 2
+                    </h3>
+
+                    <div class="fighter-preview" id="preview-player-2">
+                        <img src="assets/images/characters/preview_personagem2.png" alt="Personagem 2">
+                    </div>
+
+                    <div class="fighter-options">
+
+                        <button class="fighter-option" data-player="2" data-character="personagem1" type="button">
+                            FIGHTER 01
+                        </button>
+
+                        <button class="fighter-option" data-player="2" data-character="personagem2" type="button">
+                            FIGHTER 02
+                        </button>
+
+                    </div>
+
+                    <p id="player-2-status">
+                        ESCOLHA SEU PERSONAGEM
+                    </p>
 
                 </div>
-
-                <p id="player-1-status">
-                    ESCOLHA SEU PERSONAGEM
-                </p>
 
             </div>
 
 
-            <!-- JOGADOR 2 / COMPUTADOR -->
+            <!-- BOTÕES DE AÇÃO -->
 
-            <div class="fighter-player" id="player-2-area">
+            <div class="character-actions">
 
-                <h3 id="player-2-title">
-                    PLAYER 2
-                </h3>
+                <button id="confirm-fighters" class="menu-button" type="button" disabled>
+                    CONFIRMAR
+                </button>
 
-                <div class="fighter-preview" id="preview-player-2">
-                    <img src="assets/images/characters/preview_personagem2.png" alt="Personagem 2">
-                </div>
-
-                <div class="fighter-options">
-
-                    <button class="fighter-option" data-player="2" data-character="personagem1" type="button">
-                        FIGHTER 01
-                    </button>
-
-                    <button class="fighter-option" data-player="2" data-character="personagem2" type="button">
-                        FIGHTER 02
-                    </button>
-
-                </div>
-
-                <p id="player-2-status">
-                    ESCOLHA SEU PERSONAGEM
-                </p>
+                <button id="back-characters" class="menu-button" type="button">
+                    VOLTAR
+                </button>
 
             </div>
-
-        </div>
-
-
-        <!-- BOTÕES DE AÇÃO -->
-
-        <div class="character-actions">
-
-            <button id="confirm-fighters" class="menu-button" type="button" disabled>
-                CONFIRMAR
-            </button>
-
-            <button id="back-characters" class="menu-button" type="button">
-                VOLTAR
-            </button>
-
-        </div>
 
         </div>
 
@@ -461,7 +453,7 @@
 
 
                 <!-- DESAFIOS MATEMÁTICOS -->
-                <div id="math-challenge" class=" hidden">
+                <div id="math-challenge" class="math-challenge hidden">
 
                     <!-- DESAFIO PLAYER 1 -->
                     <div id="math-challenge-player1" class="math-challenge-card player-one-challenge hidden">
@@ -524,7 +516,7 @@
 
                     <div class="fighter-shadow"></div>
 
-                    <img id="combat-fighter1" src="" alt="Lutador 1">
+                    <canvas id="combat-fighter1" class="fighter-sprite" aria-label="Lutador 1"></canvas>
 
                 </div>
 
@@ -533,7 +525,7 @@
 
                     <div class="fighter-shadow"></div>
 
-                    <img id="combat-fighter2" src="" alt="Lutador 2">
+                    <canvas id="combat-fighter2" class="fighter-sprite" aria-label="Lutador 2"></canvas>
 
                 </div>
 
