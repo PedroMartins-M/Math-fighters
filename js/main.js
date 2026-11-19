@@ -127,6 +127,10 @@ let trainingInterval = null;
 let trainingTurn = 1;
 let trainingAdvanceTimeout = null;
 
+// Desempate: morte súbita (quando os dois ficam sem energia com a mesma vida)
+let suddenDeath = { active: false, challenge: null };
+let suddenDeathCpuTimeout = null;
+
 // Controle da CPU (modo SOLO)
 let cpuTrainingInterval = null;
 let cpuFightInterval = null;
@@ -233,77 +237,120 @@ const spriteSheets = {
     personagem2: "assets/images/characters/personagem2.png"
 };
 
-const spriteAnimations = {
-    entrada: {
-        frames: [
-            { x: 20, y: 55, w: 150, h: 230 },
-            { x: 180, y: 55, w: 150, h: 230 },
-            { x: 340, y: 55, w: 150, h: 230 },
-            { x: 500, y: 55, w: 150, h: 230 },
-            { x: 660, y: 55, w: 150, h: 230 }
+// Recortes (x, y, w, h) de cada pose na spritesheet de cada lutador.
+//   ax = posição horizontal da cabeça dentro do recorte (âncora)
+//   g  = distância do topo do recorte até o chão (alinha os pés)
+const spriteFrames = {
+    personagem1: {
+        entrada: [
+            {x: 30, y: 67, w: 102, h: 218, ax: 64.0, g: 216},
+            {x: 165, y: 66, w: 110, h: 217, ax: 69.0, g: 217},
+            {x: 304, y: 66, w: 97, h: 215, ax: 59.0, g: 217},
+            {x: 429, y: 66, w: 131, h: 216, ax: 74.5, g: 217},
+            {x: 578, y: 69, w: 89, h: 214, ax: 51.5, g: 214},
+            {x: 687, y: 74, w: 126, h: 209, ax: 67.0, g: 209}
         ],
-        speed: 140,
-        loop: false
+        andar: [
+            {x: 842, y: 81, w: 100, h: 200, ax: 71.5, g: 201},
+            {x: 942, y: 80, w: 103, h: 201, ax: 75.5, g: 202},
+            {x: 1060, y: 82, w: 102, h: 201, ax: 74.0, g: 200},
+            {x: 1168, y: 81, w: 110, h: 202, ax: 70.5, g: 201},
+            {x: 1290, y: 80, w: 89, h: 203, ax: 56.5, g: 202},
+            {x: 1393, y: 83, w: 95, h: 198, ax: 62.0, g: 199}
+        ],
+        leve: [
+            {x: 19, y: 375, w: 143, h: 191, ax: 91, g: 191},
+            {x: 170, y: 379, w: 108, h: 187, ax: 75, g: 187},
+            {x: 294, y: 377, w: 134, h: 188, ax: 71, g: 189},
+            {x: 440, y: 379, w: 152, h: 185, ax: 45, g: 187},
+            {x: 598, y: 377, w: 136, h: 189, ax: 67, g: 189}
+        ],
+        pesado: [
+            {x: 783, y: 395, w: 160, h: 171, ax: 122, g: 171},
+            {x: 974, y: 352, w: 352, h: 214, ax: 156, g: 214},
+            {x: 1356, y: 388, w: 137, h: 178, ax: 114, g: 178}
+        ],
+        contra: [
+            {x: 19, y: 665, w: 145, h: 203, ax: 66, g: 206},
+            {x: 190, y: 665, w: 160, h: 211, ax: 80, g: 206},
+            {x: 358, y: 671, w: 238, h: 194, ax: 117, g: 200},
+            {x: 598, y: 669, w: 177, h: 206, ax: 82, g: 202}
+        ],
+        especial: [
+            {x: 775, y: 695, w: 153, h: 201, ax: 75, g: 202},
+            {x: 932, y: 635, w: 147, h: 261, ax: 73, g: 262},
+            {x: 1104, y: 647, w: 192, h: 252, ax: 66, g: 250},
+            {x: 1296, y: 644, w: 226, h: 256, ax: 44, g: 253}
+        ]
     },
-
-    // Pose parada (frame inicial da entrada) usada como "idle"
-    parado: {
-        frames: [
-            { x: 20, y: 55, w: 150, h: 230 }
+    personagem2: {
+        entrada: [
+            {x: 39, y: 67, w: 93, h: 226, ax: 57.5, g: 226},
+            {x: 200, y: 68, w: 88, h: 225, ax: 52.0, g: 225},
+            {x: 361, y: 72, w: 90, h: 221, ax: 56.0, g: 221},
+            {x: 517, y: 72, w: 86, h: 221, ax: 47.0, g: 221},
+            {x: 681, y: 79, w: 72, h: 214, ax: 42.0, g: 214}
         ],
-        speed: 200,
-        loop: true
-    },
-
-    andar: {
-        frames: [
-            { x: 850, y: 65, w: 140, h: 225 },
-            { x: 990, y: 65, w: 140, h: 225 },
-            { x: 1135, y: 65, w: 140, h: 225 },
-            { x: 1265, y: 65, w: 140, h: 225 },
-            { x: 1400, y: 65, w: 130, h: 225 }
+        andar: [
+            {x: 855, y: 78, w: 97, h: 215, ax: 65.5, g: 215},
+            {x: 1001, y: 84, w: 89, h: 209, ax: 61.0, g: 209},
+            {x: 1134, y: 90, w: 95, h: 203, ax: 65.5, g: 203},
+            {x: 1265, y: 89, w: 95, h: 204, ax: 66.0, g: 204},
+            {x: 1392, y: 90, w: 101, h: 203, ax: 64.5, g: 203}
         ],
-        speed: 110,
-        loop: true
-    },
-
-    leve: {
-        frames: [
-            { x: 30, y: 365, w: 150, h: 205 },
-            { x: 180, y: 365, w: 150, h: 205 },
-            { x: 340, y: 350, w: 190, h: 220 },
-            { x: 590, y: 355, w: 160, h: 215 }
+        leve: [
+            {x: 42, y: 379, w: 120, h: 187, ax: 58, g: 187},
+            {x: 194, y: 382, w: 107, h: 184, ax: 71, g: 184},
+            {x: 349, y: 375, w: 203, h: 191, ax: 61, g: 191},
+            {x: 615, y: 376, w: 100, h: 190, ax: 50, g: 190}
         ],
-        speed: 100,
-        loop: false
-    },
-
-    pesado: {
-        frames: [
-            { x: 790, y: 365, w: 160, h: 210 },
-            { x: 960, y: 350, w: 380, h: 230 },
-            { x: 1330, y: 380, w: 180, h: 200 }
+        pesado: [
+            {x: 796, y: 381, w: 144, h: 185, ax: 99, g: 185},
+            {x: 962, y: 357, w: 360, h: 209, ax: 128, g: 209},
+            {x: 1361, y: 401, w: 116, h: 165, ax: 84, g: 165}
         ],
-        speed: 150,
-        loop: false
-    },
-
-    contra: {
-        frames: [
-            { x: 10, y: 640, w: 180, h: 250 },
-            { x: 180, y: 640, w: 180, h: 250 },
-            { x: 360, y: 640, w: 180, h: 250 },
-            { x: 570, y: 640, w: 180, h: 250 }
+        contra: [
+            {x: 24, y: 668, w: 157, h: 214, ax: 66, g: 202},
+            {x: 182, y: 656, w: 190, h: 205, ax: 63, g: 214},
+            {x: 381, y: 655, w: 193, h: 213, ax: 94, g: 215},
+            {x: 602, y: 669, w: 127, h: 204, ax: 68, g: 201}
         ],
-        speed: 120,
-        loop: false
+        especial: [
+            {x: 778, y: 653, w: 170, h: 241, ax: 97, g: 247},
+            {x: 999, y: 653, w: 320, h: 247, ax: 116, g: 247},
+            {x: 1322, y: 664, w: 182, h: 236, ax: 83, g: 236}
+        ]
     }
 };
 
-const fighterSpriteStates = {
-    1: { image: null, animation: "entrada", frame: 0, timer: null },
-    2: { image: null, animation: "entrada", frame: 0, timer: null }
+// Pose parada = primeira pose da entrada
+Object.values(spriteFrames).forEach(character => {
+    character.parado = [character.entrada[0]];
+});
+
+// Velocidade (ms por frame) e repetição de cada animação
+const animationSettings = {
+    entrada: { speed: 130, loop: false },
+    parado: { speed: 200, loop: true },
+    andar: { speed: 100, loop: true },
+    leve: { speed: 90, loop: false },
+    pesado: { speed: 140, loop: false },
+    contra: { speed: 110, loop: false },
+    especial: { speed: 150, loop: false }
 };
+
+// Altura de referência de um lutador em pé (px da spritesheet).
+// Todas as poses usam a mesma escala, então o lutador não "pulsa".
+const SPRITE_REFERENCE_HEIGHT = 215;
+
+const fighterSpriteStates = {
+    1: { image: null, character: null, animation: "entrada", frame: 0, timer: null },
+    2: { image: null, character: null, animation: "entrada", frame: 0, timer: null }
+};
+
+function getFighterFrames(state) {
+    return spriteFrames[state.character]?.[state.animation];
+}
 
 function drawFighterFrame(player) {
     const state = fighterSpriteStates[player];
@@ -312,39 +359,39 @@ function drawFighterFrame(player) {
         ? combatFighter1
         : combatFighter2;
 
-    if (!state.image || !canvas) return;
+    if (!state.image || !state.character || !canvas) return;
 
-    const animation = spriteAnimations[state.animation];
-    if (!animation) return;
-
-    const frame = animation.frames[state.frame];
+    const frames = getFighterFrames(state);
+    const frame = frames && frames[state.frame];
     if (!frame) return;
-
-    const ctx = canvas.getContext("2d");
 
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
 
     if (!width || !height) return;
 
+    const ctx = canvas.getContext("2d");
     const pixelRatio = window.devicePixelRatio || 1;
 
-    canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
+    const pixelWidth = Math.round(width * pixelRatio);
+    const pixelHeight = Math.round(height * pixelRatio);
+
+    // Só redimensiona quando preciso (redimensionar apaga o canvas)
+    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
 
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
-    const scale = Math.min(
-        (width * 0.95) / frame.w,
-        (height * 0.95) / frame.h
-    );
+    const scale = (height * 0.92) / SPRITE_REFERENCE_HEIGHT;
 
     const drawWidth = frame.w * scale;
     const drawHeight = frame.h * scale;
 
-    const drawX = (width - drawWidth) / 2;
-    const drawY = height - drawHeight;
+    // Cabeça no centro do canvas e pés sempre na mesma linha do chão
+    const drawX = width / 2 - frame.ax * scale;
+    const groundY = height * 0.98;
+    const drawY = groundY - frame.g * scale;
 
     ctx.imageSmoothingEnabled = false;
 
@@ -370,35 +417,38 @@ function stopFighterTimer(state) {
 
 function setFighterAnimation(player, animationName) {
     const state = fighterSpriteStates[player];
-    const animation = spriteAnimations[animationName];
+    const settings = animationSettings[animationName];
 
-    if (!state || !state.image || !animation) return;
+    if (!state || !state.image || !state.character || !settings) return;
+
+    state.animation = animationName;
+
+    const frames = getFighterFrames(state);
+    if (!frames) return;
 
     stopFighterTimer(state);
 
-    state.animation = animationName;
     state.frame = 0;
-
     drawFighterFrame(player);
 
     // Animação de um único frame que repete: não precisa de timer.
-    if (animation.loop && animation.frames.length <= 1) return;
+    if (settings.loop && frames.length <= 1) return;
 
     state.timer = setInterval(() => {
         state.frame++;
 
-        if (state.frame >= animation.frames.length) {
-            if (animation.loop) {
+        if (state.frame >= frames.length) {
+            if (settings.loop) {
                 state.frame = 0;
             } else {
-                // Terminou: volta para a pose parada (antes repetia "entrada" para sempre).
+                // Terminou: volta para a pose parada
                 setFighterAnimation(player, "parado");
                 return;
             }
         }
 
         drawFighterFrame(player);
-    }, animation.speed);
+    }, settings.speed);
 }
 
 function stopFighterSprites() {
@@ -410,7 +460,7 @@ function stopFighterSprites() {
 const attackSpriteAnimations = {
     leve: "leve",
     contra: "contra",
-    especial: "pesado"
+    especial: "especial"
 };
 
 function playAttackSprite(player, attackName) {
@@ -438,6 +488,9 @@ function loadFighterSprite(player) {
     }
 
     const image = new Image();
+
+    state.image = null;
+    state.character = fighter;
 
     image.onload = () => {
         state.image = image;
@@ -511,6 +564,13 @@ function clearTrainingTimers() {
 }
 
 function clearRoundTimers() {
+    if (suddenDeathCpuTimeout) {
+        clearTimeout(suddenDeathCpuTimeout);
+        suddenDeathCpuTimeout = null;
+    }
+
+    suddenDeath = { active: false, challenge: null };
+
     if (cpuFightInterval) {
         clearInterval(cpuFightInterval);
         cpuFightInterval = null;
@@ -1427,7 +1487,7 @@ function finishTrainingPhase() {
 
 
 
-function displayMathChallenge(player, challenge) {
+function displayMathChallenge(player, challenge, label = "PREPARAÇÃO") {
     const panel = player === 1
         ? mathChallengePlayer1
         : mathChallengePlayer2;
@@ -1467,7 +1527,7 @@ function displayMathChallenge(player, challenge) {
     if (heading) {
         // Mantém o selo "P1/P2" e troca só o texto do título
         const title = heading.lastElementChild || heading;
-        title.textContent = `PLAYER ${player} - PREPARAÇÃO`;
+        title.textContent = `PLAYER ${player} - ${label}`;
     }
 
     answerInput?.focus();
@@ -1513,6 +1573,11 @@ function hideMathChallenge(player) {
 
 
 function checkMathAnswer(player) {
+    if (suddenDeath.active) {
+        checkSuddenDeathAnswer(player);
+        return;
+    }
+
     if (
         matchOver ||
         roundFinished ||
@@ -1585,7 +1650,8 @@ function executeAttack(player, attackName, fromCpu = false) {
         matchOver ||
         trainingActive ||
         roundFinished ||
-        roundStarting
+        roundStarting ||
+        suddenDeath.active
     ) {
         return;
     }
@@ -1648,7 +1714,8 @@ function checkFightStalemate() {
         trainingActive ||
         roundFinished ||
         roundStarting ||
-        roundTransitionTimeout
+        roundTransitionTimeout ||
+        suddenDeath.active
     ) {
         return;
     }
@@ -1664,16 +1731,132 @@ function checkFightStalemate() {
 
     if (combatStatus) {
         combatStatus.textContent =
-            "AMBOS SEM ENERGIA! NOVA PREPARAÇÃO...";
+            "AMBOS SEM ENERGIA! DESEMPATE...";
     }
 
     roundTransitionTimeout = setTimeout(() => {
         roundTransitionTimeout = null;
 
-        if (!matchOver && !roundFinished) {
-            startTrainingPhase();
-        }
+        if (matchOver || roundFinished) return;
+
+        resolveEnergyTiebreak();
     }, 1500);
+}
+
+// Desempate quando os dois lutadores ficam sem energia:
+//   1) vence quem tiver mais vida;
+//   2) vida igual -> morte súbita (uma conta; quem acertar primeiro vence).
+function resolveEnergyTiebreak() {
+    const life1 = playerLife[1];
+    const life2 = playerLife[2];
+
+    if (life1 !== life2) {
+        finishRound(
+            life1 > life2 ? 1 : 2,
+            "DESEMPATE POR VIDA"
+        );
+        return;
+    }
+
+    startSuddenDeath();
+}
+
+function startSuddenDeath() {
+    if (matchOver || roundFinished) return;
+
+    const challenge = generateMathQuestion(getQuestionDifficulty());
+    challenge.training = false;
+
+    suddenDeath = { active: true, challenge };
+
+    if (combatStatus) {
+        combatStatus.textContent =
+            "MORTE SÚBITA! QUEM ACERTAR PRIMEIRO VENCE!";
+    }
+
+    if (combatTimer) {
+        combatTimer.textContent = "SUDDEN DEATH";
+    }
+
+    // O Player 2 é exibido primeiro para o foco ficar no campo do Player 1
+    if (selectedMode === "VERSUS LOCAL") {
+        displayMathChallenge(2, challenge, "MORTE SÚBITA");
+    }
+
+    displayMathChallenge(1, challenge, "MORTE SÚBITA");
+
+    // No SOLO a CPU também tenta responder, depois de um tempo
+    if (selectedMode === "SOLO") {
+        const delay =
+            getCpuProfile().suddenDeathDelay +
+            Math.random() * 2000;
+
+        suddenDeathCpuTimeout = setTimeout(() => {
+            suddenDeathCpuTimeout = null;
+
+            if (suddenDeath.active) {
+                endSuddenDeath(2);
+            }
+        }, delay);
+    }
+}
+
+function checkSuddenDeathAnswer(player) {
+    const challenge = suddenDeath.challenge;
+
+    if (!suddenDeath.active || !challenge) return;
+
+    const answerInput = player === 1
+        ? mathAnswerPlayer1
+        : mathAnswerPlayer2;
+
+    const feedback = player === 1
+        ? mathFeedbackPlayer1
+        : mathFeedbackPlayer2;
+
+    if (!answerInput) return;
+
+    const answerText = answerInput.value.trim();
+    const userAnswer = Number(answerText);
+
+    if (answerText === "" || !Number.isFinite(userAnswer)) {
+        if (feedback) {
+            feedback.textContent = "DIGITE UMA RESPOSTA VÁLIDA!";
+        }
+        return;
+    }
+
+    if (userAnswer !== challenge.answer) {
+        if (feedback) {
+            feedback.textContent = "ERROU! TENTE DE NOVO!";
+        }
+
+        answerInput.value = "";
+        answerInput.focus();
+        return;
+    }
+
+    if (feedback) {
+        feedback.textContent = "CORRETO!";
+    }
+
+    endSuddenDeath(player);
+}
+
+function endSuddenDeath(winner) {
+    if (!suddenDeath.active) return;
+
+    suddenDeath = { active: false, challenge: null };
+
+    if (suddenDeathCpuTimeout) {
+        clearTimeout(suddenDeathCpuTimeout);
+        suddenDeathCpuTimeout = null;
+    }
+
+    hideMathChallenge(1);
+    hideMathChallenge(2);
+
+    finishRound(winner, "VENCEU NA MORTE SÚBITA");
 }
 
 
@@ -1764,7 +1947,7 @@ function showAttackEffect(player, attackName) {
    26. FINALIZAÇÃO DE UM ROUND
    ========================================================= */
 
-function finishRound(winner) {
+function finishRound(winner, reason) {
     if (matchOver || roundFinished) return;
 
     roundFinished = true;
@@ -1798,7 +1981,7 @@ function finishRound(winner) {
 
     if (roundFightText) {
         roundFightText.textContent =
-            `ROUND ${currentRound} FINALIZADO`;
+            reason || `ROUND ${currentRound} FINALIZADO`;
     }
 
     if (roundIntro) {
@@ -2105,7 +2288,8 @@ function canFightersMove() {
         !matchOver &&
         !trainingActive &&
         !roundFinished &&
-        !roundStarting
+        !roundStarting &&
+        !suddenDeath.active
     );
 }
 
@@ -2210,7 +2394,7 @@ function movementLoop(timestamp) {
 
         // Troca entre parado/andando sem interromper ataques e a entrada
         const state = fighterSpriteStates[player];
-        const busy = ["entrada", "leve", "pesado", "contra"];
+        const busy = ["entrada", "leve", "pesado", "contra", "especial"];
 
         if (state.image && !busy.includes(state.animation)) {
             const wanted = direction !== 0 ? "andar" : "parado";
@@ -2230,9 +2414,9 @@ function movementLoop(timestamp) {
    ========================================================= */
 
 const CPU_PROFILES = {
-    iniciante: { trainEvery: 6000, trainChance: 0.6, attackEvery: 1800 },
-    intermediario: { trainEvery: 5000, trainChance: 0.7, attackEvery: 1300 },
-    avancado: { trainEvery: 4000, trainChance: 0.8, attackEvery: 900 }
+    iniciante: { trainEvery: 6000, trainChance: 0.6, attackEvery: 1800, suddenDeathDelay: 9000 },
+    intermediario: { trainEvery: 5000, trainChance: 0.7, attackEvery: 1300, suddenDeathDelay: 6500 },
+    avancado: { trainEvery: 4000, trainChance: 0.8, attackEvery: 900, suddenDeathDelay: 4500 }
 };
 
 function getCpuProfile() {

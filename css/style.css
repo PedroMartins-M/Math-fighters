@@ -829,6 +829,8 @@ select {
    DESAFIOS MATEMÁTICOS
    --------------------------------------------------------- */
 .math-challenge {
+    gap: 20px;
+    flex-wrap: wrap;
     position: absolute;
     inset: 0;
     z-index: 20;
@@ -1268,7 +1270,9 @@ select {
 
 .fighter-sprite {
     display: block;
-    width: 100%;
+    /* Canvas largo: deixa os efeitos (golpes, raios) saírem do corpo sem cortar */
+    width: 260%;
+    flex: none;
     height: 100%;
     max-width: none;
     max-height: none;
