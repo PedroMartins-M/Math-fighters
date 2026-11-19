@@ -125,7 +125,7 @@ let trainingInterval = null;
 
 // Controle da alternância de jogadores no treinamento
 let trainingTurn = 1;
-let trainingAdvanceTimeout = null;
+let trainingAdvanceTimeouts = { 1: null, 2: null };
 
 // Desempate: morte súbita (quando os dois ficam sem energia com a mesma vida)
 let suddenDeath = { active: false, challenge: null };
@@ -557,10 +557,12 @@ function clearTrainingTimers() {
         trainingInterval = null;
     }
 
-    if (trainingAdvanceTimeout) {
-        clearTimeout(trainingAdvanceTimeout);
-        trainingAdvanceTimeout = null;
-    }
+    [1, 2].forEach(player => {
+        if (trainingAdvanceTimeouts[player]) {
+            clearTimeout(trainingAdvanceTimeouts[player]);
+            trainingAdvanceTimeouts[player] = null;
+        }
+    });
 }
 
 function clearRoundTimers() {
@@ -724,8 +726,9 @@ if (versusButton) {
     versusButton.addEventListener("click", () => {
         selectedMode = "VERSUS LOCAL";
 
+        // A dificuldade também vale para o modo 2 jogadores
         if (difficultySetting) {
-            difficultySetting.classList.add("hidden");
+            difficultySetting.classList.remove("hidden");
         }
 
         showPanel(setupPanel);
@@ -780,10 +783,7 @@ if (continueSetup) {
         gameConfig = {
             mode: selectedMode,
             arena: selectedArena,
-            difficulty:
-                selectedMode === "SOLO"
-                    ? (difficultySelect?.value || "intermediario")
-                    : "intermediario"
+            difficulty: difficultySelect?.value || "intermediario"
         };
 
         prepareCharacterSelection();
@@ -1008,15 +1008,12 @@ const TRAINING_REWARD = {
 };
 
 function getQuestionDifficulty() {
-    if (gameConfig?.mode === "SOLO") {
-        const difficulty = gameConfig.difficulty || "intermediario";
+    // A dificuldade escolhida vale para SOLO e para VERSUS LOCAL
+    const difficulty = gameConfig?.difficulty || "intermediario";
 
-        return difficulty === "iniciante"
-            ? "facil"
-            : difficulty;
-    }
-
-    return "intermediario";
+    return difficulty === "iniciante"
+        ? "facil"
+        : difficulty;
 }
 
 function getDifficultyReward(difficulty) {
@@ -1355,8 +1352,12 @@ function startTrainingPhase() {
 
     updateTrainingTimer();
 
-    // Abre a primeira questão automaticamente
-    openTrainingQuestion(trainingTurn);
+    // Cada jogador recebe a própria conta ao mesmo tempo
+    openTrainingQuestion(1);
+
+    if (selectedMode === "VERSUS LOCAL") {
+        openTrainingQuestion(2);
+    }
 
     // A CPU também acumula energia durante a preparação
     startCpuTraining();
@@ -1393,9 +1394,7 @@ function openTrainingQuestion(player) {
     // No modo SOLO, somente o jogador participa
     if (selectedMode === "SOLO" && player !== 1) return;
 
-    // Esconde a questão anterior
-    hideMathChallenge(player === 1 ? 2 : 1);
-
+    // Cada jogador tem a própria aba, sem esconder a do outro
     const challenge = generateMathQuestion(
         getQuestionDifficulty()
     );
@@ -1407,22 +1406,13 @@ function openTrainingQuestion(player) {
     displayMathChallenge(player, challenge);
 }
 
-function advanceTrainingTurn() {
+// Abre a próxima conta só para o jogador que acabou de acertar
+function advanceTrainingTurn(player) {
     if (!trainingActive || matchOver || roundFinished) return;
 
-    if (selectedMode === "SOLO") {
-        trainingTurn = 1;
-    } else {
-        trainingTurn = trainingTurn === 1 ? 2 : 1;
-    }
-
-    openTrainingQuestion(trainingTurn);
+    openTrainingQuestion(player);
 }
 
-
-/* =========================================================
-   20. FINALIZAÇÃO DA PREPARAÇÃO
-   ========================================================= */
 
 function finishTrainingPhase() {
     if (!trainingActive) return;
@@ -1530,7 +1520,14 @@ function displayMathChallenge(player, challenge, label = "PREPARAÇÃO") {
         title.textContent = `PLAYER ${player} - ${label}`;
     }
 
-    answerInput?.focus();
+    // Não rouba o foco se o outro jogador estiver digitando a resposta dele
+    const otherInput = player === 1
+        ? mathAnswerPlayer2
+        : mathAnswerPlayer1;
+
+    if (!otherInput || document.activeElement !== otherInput) {
+        answerInput?.focus();
+    }
 }
 
 
@@ -1590,11 +1587,6 @@ function checkMathAnswer(player) {
 
     if (!challenge || !challenge.training) return;
 
-    // No VERSUS, somente o jogador da vez pode responder.
-    if (selectedMode === "VERSUS LOCAL" && player !== trainingTurn) {
-        return;
-    }
-
     const answerInput = player === 1
         ? mathAnswerPlayer1
         : mathAnswerPlayer2;
@@ -1635,9 +1627,9 @@ function checkMathAnswer(player) {
 
     currentChallenges[player] = null;
 
-    trainingAdvanceTimeout = setTimeout(() => {
-        trainingAdvanceTimeout = null;
-        advanceTrainingTurn();
+    trainingAdvanceTimeouts[player] = setTimeout(() => {
+        trainingAdvanceTimeouts[player] = null;
+        advanceTrainingTurn(player);
     }, 450);
 }
 
@@ -1675,30 +1667,38 @@ function executeAttack(player, attackName, fromCpu = false) {
         return;
     }
 
-    // Consome a energia.
-    playerPower[player] -= attack.cost;
-    updatePowerBar(player);
-
     // Identifica o adversário.
     const opponent = player === 1 ? 2 : 1;
 
-    // Aplica o dano.
-    playerLife[opponent] -= attack.damage;
-    playerLife[opponent] = Math.max(0, playerLife[opponent]);
+    // Hitbox: o adversário está ao alcance deste golpe?
+    const hit = isAttackInRange(player, opponent, attackName);
 
-    updateHealthBar(opponent);
+    // Consome a energia (errar o golpe também gasta, se configurado).
+    if (hit || WHIFF_COSTS_ENERGY) {
+        playerPower[player] -= attack.cost;
+        updatePowerBar(player);
+    }
+
+    if (hit) {
+        // Aplica o dano.
+        playerLife[opponent] -= attack.damage;
+        playerLife[opponent] = Math.max(0, playerLife[opponent]);
+
+        updateHealthBar(opponent);
+    }
 
     // Atualiza a mensagem.
     if (combatStatus) {
-        combatStatus.textContent =
-            `${getPlayerName(player)} USOU ${attack.name}!`;
+        combatStatus.textContent = hit
+            ? `${getPlayerName(player)} USOU ${attack.name}!`
+            : `${getPlayerName(player)} ERROU O GOLPE! MUITO LONGE!`;
     }
 
     // Executa os efeitos visuais.
-    showAttackEffect(player, attackName);
+    showAttackEffect(player, attackName, hit);
 
     // Verifica se o adversário perdeu o round.
-    if (playerLife[opponent] <= 0) {
+    if (hit && playerLife[opponent] <= 0) {
         finishRound(player);
         return;
     }
@@ -1739,6 +1739,14 @@ function checkFightStalemate() {
 
         if (matchOver || roundFinished) return;
 
+        // Confere de novo: só desempata se ainda ninguém pode atacar
+        if (
+            playerPower[1] >= attackTypes.leve.cost ||
+            playerPower[2] >= attackTypes.leve.cost
+        ) {
+            return;
+        }
+
         resolveEnergyTiebreak();
     }, 1500);
 }
@@ -1778,12 +1786,11 @@ function startSuddenDeath() {
         combatTimer.textContent = "SUDDEN DEATH";
     }
 
-    // O Player 2 é exibido primeiro para o foco ficar no campo do Player 1
+    displayMathChallenge(1, challenge, "MORTE SÚBITA");
+
     if (selectedMode === "VERSUS LOCAL") {
         displayMathChallenge(2, challenge, "MORTE SÚBITA");
     }
-
-    displayMathChallenge(1, challenge, "MORTE SÚBITA");
 
     // No SOLO a CPU também tenta responder, depois de um tempo
     if (selectedMode === "SOLO") {
@@ -1866,7 +1873,7 @@ function endSuddenDeath(winner) {
    25. EFEITOS VISUAIS DOS ATAQUES
    ========================================================= */
 
-function showAttackEffect(player, attackName) {
+function showAttackEffect(player, attackName, hit = true) {
     const attacker = player === 1
         ? fighterContainer1
         : fighterContainer2;
@@ -1896,7 +1903,7 @@ function showAttackEffect(player, attackName) {
         }, 550);
     }
 
-    if (defender) {
+    if (defender && hit) {
         defender.classList.remove("taking-hit");
 
         void defender.offsetWidth;
@@ -1910,7 +1917,9 @@ function showAttackEffect(player, attackName) {
 
     if (combatImpact) {
         combatImpact.textContent =
-            attackName === "especial"
+            !hit
+                ? "MISS!"
+                : attackName === "especial"
                 ? "SPECIAL!"
                 : attackName === "contra"
                     ? "COUNTER!"
@@ -1928,7 +1937,7 @@ function showAttackEffect(player, attackName) {
         }, 450);
     }
 
-    if (combatArena) {
+    if (combatArena && hit) {
         combatArena.classList.remove("screen-shake");
 
         void combatArena.offsetWidth;
@@ -2266,6 +2275,68 @@ const movementControls = {
 let movementFrameId = null;
 let lastMovementTime = 0;
 
+/* ---------------------------------------------------------
+   HITBOX
+   Cada lutador tem um "corpo" (largura da pose parada) centrado
+   no próprio container. Cada golpe tem um alcance à frente do corpo,
+   medido nos recortes da spritesheet (o ponto mais distante da
+   animação do golpe). O golpe só acerta se o corpo do adversário
+   estiver dentro desse alcance.
+   --------------------------------------------------------- */
+
+// Se true, errar o golpe (adversário fora de alcance) gasta a energia.
+const WHIFF_COSTS_ENERGY = true;
+
+const defaultAttackReach = { leve: 90, contra: 110, especial: 180 };
+
+function getFighterMetrics(player) {
+    const container = player === 1
+        ? fighterContainer1
+        : fighterContainer2;
+
+    const canvas = player === 1
+        ? combatFighter1
+        : combatFighter2;
+
+    const rect = container.getBoundingClientRect();
+    const height = (canvas && canvas.clientHeight) || rect.height;
+
+    // Mesma escala usada para desenhar o sprite
+    const scale = (height * 0.92) / SPRITE_REFERENCE_HEIGHT;
+
+    const state = fighterSpriteStates[player];
+    const idle = spriteFrames[state.character]?.parado?.[0];
+
+    return {
+        cx: rect.left + rect.width / 2,
+        scale,
+        bodyHalf: (idle ? idle.w / 2 : 50) * scale
+    };
+}
+
+// Alcance (em px da spritesheet) à frente do corpo
+function getAttackReach(player, attackName) {
+    const state = fighterSpriteStates[player];
+    const animationName = attackSpriteAnimations[attackName];
+    const frames = spriteFrames[state.character]?.[animationName];
+
+    if (!frames || !frames.length) {
+        return defaultAttackReach[attackName] || 90;
+    }
+
+    return Math.max(...frames.map(frame => frame.w - frame.ax));
+}
+
+function isAttackInRange(attacker, defender, attackName) {
+    const a = getFighterMetrics(attacker);
+    const d = getFighterMetrics(defender);
+
+    const distance = Math.abs(d.cx - a.cx);
+    const reach = getAttackReach(attacker, attackName) * a.scale;
+
+    return distance <= reach + d.bodyHalf;
+}
+
 function resetFighterPositions() {
     keysDown.clear();
 
@@ -2341,6 +2412,10 @@ function movementLoop(timestamp) {
 
         let direction = 0;
 
+        if (canMove && isCpu) {
+            direction = getCpuMoveDirection();
+        }
+
         if (canMove && !isCpu) {
             if (keysDown.has(controls.left)) direction -= 1;
             if (keysDown.has(controls.right)) direction += 1;
@@ -2354,25 +2429,32 @@ function movementLoop(timestamp) {
             }
         }
 
-        // Caminhada com limites: bordas da arena e o outro lutador
+        // Caminhada com limites: bordas da arena e o corpo do outro lutador
         if (direction !== 0) {
-            const rect1 = fighterContainer1.getBoundingClientRect();
-            const rect2 = fighterContainer2.getBoundingClientRect();
+            const m1 = getFighterMetrics(1);
+            const m2 = getFighterMetrics(2);
 
-            const gap = rect2.left - rect1.right;
-            const minGap = -Math.min(rect1.width, rect2.width) * 0.2;
-            const room = Math.max(0, gap - minGap);
+            // Os corpos não se atravessam: distância mínima entre os centros
+            const minDistance = (m1.bodyHalf + m2.bodyHalf) * 0.9;
+            const room = Math.max(0, (m2.cx - m1.cx) - minDistance);
 
-            let dx = direction * walkSpeed * dt;
+            const speed = isCpu ? walkSpeed * 0.7 : walkSpeed;
+            let dx = direction * speed * dt;
 
             if (player === 1) {
-                dx = dx > 0
-                    ? Math.min(dx, room)
-                    : Math.max(dx, Math.min(0, arenaRect.left - rect1.left));
+                const edge = Math.max(
+                    0,
+                    m1.cx - (arenaRect.left + m1.bodyHalf)
+                );
+
+                dx = dx > 0 ? Math.min(dx, room) : Math.max(dx, -edge);
             } else {
-                dx = dx < 0
-                    ? Math.max(dx, -room)
-                    : Math.min(dx, Math.max(0, arenaRect.right - rect2.right));
+                const edge = Math.max(
+                    0,
+                    (arenaRect.right - m2.bodyHalf) - m2.cx
+                );
+
+                dx = dx < 0 ? Math.max(dx, -room) : Math.min(dx, edge);
             }
 
             motion.x += dx;
@@ -2424,6 +2506,22 @@ function getCpuProfile() {
         CPU_PROFILES.intermediario;
 }
 
+// A CPU caminha até uma distância em que o golpe leve acerta com folga.
+function getCpuMoveDirection() {
+    const player1 = getFighterMetrics(1);
+    const cpu = getFighterMetrics(2);
+
+    const distance = cpu.cx - player1.cx;
+
+    const preferred =
+        getAttackReach(2, "leve") * cpu.scale * 0.8 + player1.bodyHalf;
+
+    if (distance > preferred + 15) return -1;
+    if (distance < preferred - 80) return 1;
+
+    return 0;
+}
+
 // Durante a preparação a CPU "acerta" contas de tempos em tempos.
 function startCpuTraining() {
     if (selectedMode !== "SOLO") return;
@@ -2467,19 +2565,26 @@ function startCpuFight() {
         }
 
         const power = playerPower[2];
-        let attackName = null;
 
-        if (power >= attackTypes.especial.cost && Math.random() < 0.6) {
-            attackName = "especial";
-        } else if (power >= attackTypes.contra.cost && Math.random() < 0.6) {
-            attackName = "contra";
-        } else if (power >= attackTypes.leve.cost) {
-            attackName = "leve";
+        // Só considera golpes que pode pagar E que alcançam o jogador
+        const candidates = ["especial", "contra", "leve"].filter(name =>
+            power >= attackTypes[name].cost &&
+            isAttackInRange(2, 1, name)
+        );
+
+        if (!candidates.length) return;
+
+        // Prefere o golpe mais forte, com um pouco de aleatoriedade
+        let attackName = candidates[candidates.length - 1];
+
+        for (let i = 0; i < candidates.length - 1; i++) {
+            if (Math.random() < 0.6) {
+                attackName = candidates[i];
+                break;
+            }
         }
 
-        if (attackName) {
-            executeAttack(2, attackName, true);
-        }
+        executeAttack(2, attackName, true);
     }, profile.attackEvery);
 }
 
